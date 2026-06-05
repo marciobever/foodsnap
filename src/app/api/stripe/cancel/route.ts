@@ -2,9 +2,13 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key_for_build', {
-    apiVersion: '2026-05-27.dahlia',
-});
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
+const stripeSecretKey =
+  (process.env.STRIPE_SECRET_KEY || '').trim() || 'sk_test_dummy_key_for_build';
+
+const stripe = new Stripe(stripeSecretKey);
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,38 +18,62 @@ const supabaseAdmin = createClient(
 export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) {
+
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    const token = authHeader.replace('Bearer ', '').trim();
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabaseAdmin.auth.getUser(token);
 
     if (authError || !user) {
       return NextResponse.json({ error: 'Sessão inválida' }, { status: 401 });
     }
 
-    // Pegar a assinatura ativa
-    const { data: subscription } = await supabaseAdmin
+    const { data: subscription, error: subscriptionError } = await supabaseAdmin
       .from('subscriptions')
       .select('*')
       .eq('user_id', user.id)
-      .eq('status', 'active')
-      .single();
+      .in('status', ['active', 'trialing'])
+      .maybeSingle();
 
-    if (!subscription || !subscription.stripe_subscription_id) {
-      return NextResponse.json({ error: 'Nenhuma assinatura ativa encontrada no Stripe' }, { status: 404 });
+    if (subscriptionError || !subscription?.stripe_subscription_id) {
+      return NextResponse.json(
+        { error: 'Nenhuma assinatura ativa encontrada no Stripe' },
+        { status: 404 }
+      );
     }
 
-    // Cancelar no Stripe no final do período de faturamento atual
-    await stripe.subscriptions.update(subscription.stripe_subscription_id, {
-        cancel_at_period_end: true
+    const stripeSubscription = await stripe.subscriptions.update(
+      subscription.stripe_subscription_id,
+      {
+        cancel_at_period_end: true,
+      }
+    );
+
+    await supabaseAdmin
+      .from('subscriptions')
+      .update({
+        status: stripeSubscription.status,
+        cancel_at_period_end: true,
+      })
+      .eq('user_id', user.id);
+
+    return NextResponse.json({
+      success: true,
+      message:
+        'Assinatura cancelada com sucesso. Você terá acesso até o fim do ciclo atual.',
     });
-
-    return NextResponse.json({ success: true, message: 'Assinatura cancelada com sucesso. Você terá acesso até o fim do ciclo atual.' });
-
   } catch (error: any) {
-    console.error('Cancel Error:', error);
-    return NextResponse.json({ error: error.message || 'Erro interno ao cancelar assinatura' }, { status: 500 });
+    console.error('Cancel Subscription Error:', error);
+
+    return NextResponse.json(
+      { error: error.message || 'Erro interno ao cancelar assinatura' },
+      { status: 500 }
+    );
   }
 }

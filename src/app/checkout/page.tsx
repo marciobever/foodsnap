@@ -6,55 +6,20 @@ import { useUser } from '@/contexts/UserContext';
 import { supabase } from '@/lib/supabase';
 import {
   Zap, ShieldCheck, Lock, Loader2, CheckCircle2, CreditCard, ArrowRight,
-  Mail, Eye, EyeOff, Phone, User as UserIcon, MessageCircle, LogOut
+  Mail, Eye, EyeOff, MessageCircle, LogOut, User as UserIcon
 } from 'lucide-react';
 
 // ── Formatters ──────────────────────────────────────────────────────────────
-function formatCardNumber(v: string) {
-  return v.replace(/\D/g, '').slice(0, 16).replace(/(\d{4})(?=\d)/g, '$1 ').trim();
-}
-function formatExpiry(v: string) {
-  const d = v.replace(/\D/g, '').slice(0, 4);
-  if (d.length >= 3) return d.slice(0, 2) + '/' + d.slice(2);
-  return d;
-}
-function formatCPF(v: string) {
-  return v.replace(/\D/g, '').slice(0, 11)
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d)/, '$1.$2')
-    .replace(/(\d{3})(\d{1,2})$/, '$1-$2');
-}
-function formatCEP(v: string) {
-  return v.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2');
-}
 function formatPhone(v: string) {
-  const hasPlus = v.startsWith('+');
-  const digits = v.replace(/\D/g, '');
-  
-  if (digits.length === 0) return '';
-  
-  if (hasPlus || digits.length > 11) {
-    return '+' + digits.slice(0, 15);
-  }
-  
-  if (digits.length === 11) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
-  }
-  if (digits.length === 10) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
-  }
-  if (digits.length >= 7) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
-  }
-  if (digits.length >= 3) {
-    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
-  }
-  return digits;
+  const d = v.replace(/\D/g, '').slice(0, 11);
+  if (d.length >= 7) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
+  if (d.length >= 3) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
+  return d;
 }
 
 const FEATURES = [
   '5 análises de refeição por dia via WhatsApp',
-  'Coach pessoal com 4 personalidades de IA',
+  'Coach pessoal com 7 personalidades de IA',
   'Avaliação física a cada 3 dias',
   'Plano de treino e dieta personalizado',
   'Histórico completo e gráficos de evolução',
@@ -80,13 +45,11 @@ function friendlyError(msg: string) {
   return 'Erro: ' + msg;
 }
 
-// ── Main Page ────────────────────────────────────────────────────────────────
 export default function CheckoutPage() {
   const router = useRouter();
   const { user, loading, refreshProfile } = useUser();
 
   const [step, setStep] = useState<'account' | 'payment'>('account');
-  const [done, setDone] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showPassword, setShowPassword] = useState(false);
@@ -94,14 +57,11 @@ export default function CheckoutPage() {
 
   // ── Form state ────────────────────────────────────────────────────────────
   const [form, setForm] = useState({
-    // Conta
-    name: '', email: '', phone: '', password: '',
-    // Cartão
-    holderName: '', number: '', expiryMonth: '', expiryYear: '',
-    ccv: '', cpfCnpj: '', postalCode: '', addressNumber: '', address: '',
+    name: '',
+    email: '',
+    phone: '',
+    password: '',
   });
-
-  const expiryDisplay = form.expiryMonth + (form.expiryYear ? '/' + form.expiryYear : '');
 
   // Se já é PRO/trial, redireciona pro dashboard
   useEffect(() => {
@@ -109,10 +69,6 @@ export default function CheckoutPage() {
       if (user.plan === 'pro') {
         router.replace('/dashboard');
         return;
-      }
-      // Pré-preenche nome no cartão se tiver nome no perfil
-      if (user.name && user.name !== 'Usuário') {
-        setForm(f => ({ ...f, holderName: f.holderName || user!.name.toUpperCase() }));
       }
       setStep('payment');
     }
@@ -126,12 +82,15 @@ export default function CheckoutPage() {
       provider: 'google',
       options: { redirectTo: window.location.origin + '/checkout' },
     });
-    if (error) { setError(friendlyError(error.message)); setSubmitting(false); }
+    if (error) {
+      setError(friendlyError(error.message));
+      setSubmitting(false);
+    }
   };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
-    setForm({ name: '', email: '', phone: '', password: '', holderName: '', number: '', expiryMonth: '', expiryYear: '', ccv: '', cpfCnpj: '', postalCode: '', addressNumber: '', address: '' });
+    setForm({ name: '', email: '', phone: '', password: '' });
     setError(null);
     setStep('account');
   };
@@ -141,17 +100,10 @@ export default function CheckoutPage() {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    if (name === 'number') { set('number', formatCardNumber(value)); return; }
-    if (name === 'expiry') {
-      const fmt = formatExpiry(value);
-      const [mm, yy] = fmt.split('/');
-      setForm(f => ({ ...f, expiryMonth: mm || '', expiryYear: yy || '' }));
+    if (name === 'phone') {
+      set('phone', formatPhone(value));
       return;
     }
-    if (name === 'ccv') { set('ccv', value.replace(/\D/g, '').slice(0, 4)); return; }
-    if (name === 'cpfCnpj') { set('cpfCnpj', formatCPF(value)); return; }
-    if (name === 'postalCode') { set('postalCode', formatCEP(value)); return; }
-    if (name === 'phone') { set('phone', formatPhone(value)); return; }
     set(name, value);
   };
 
@@ -209,7 +161,7 @@ export default function CheckoutPage() {
     }
   };
 
-  // ── Submit — tudo em uma única chamada ───────────────────────────────────
+  // ── Submit — cria conta se necessário e redireciona para o Stripe ──────────
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
@@ -218,12 +170,12 @@ export default function CheckoutPage() {
     try {
       let sessionToken: string | null = null;
 
-      // ── Se não está logado: cria conta e registra perfil (fluxo cadastro) ──
+      // 1. Se não está logado: cria conta e registra perfil
       if (!user) {
         const phoneDigits = form.phone.replace(/\D/g, '');
         if (phoneDigits.length < 10) throw new Error('Informe um número de WhatsApp válido com DDD.');
 
-        // 1. Cria conta no Supabase (passando phone no metadata para o trigger handle_new_user)
+        // Cria conta no Supabase
         const { data, error: signUpErr } = await supabase.auth.signUp({
           email: form.email.trim().toLowerCase(),
           password: form.password,
@@ -239,7 +191,7 @@ export default function CheckoutPage() {
 
         sessionToken = data.session.access_token;
 
-        // 2. Salva perfil + telefone (RPC)
+        // Salva perfil + telefone no banco (via RPC)
         const { error: rpcErr } = await supabase.rpc('register_user_profile', {
           p_full_name: form.name.trim(),
           p_phone: phoneDigits,
@@ -248,9 +200,9 @@ export default function CheckoutPage() {
         if (rpcErr) throw rpcErr;
 
       } else {
-        // Já logado (Google / Login por Email concluído) — salva telefone se ainda não tem
+        // Já logado (Google / Login por Email) — salva telefone se ainda não tem
+        const phoneDigits = form.phone.replace(/\D/g, '');
         if (!user.phone) {
-          const phoneDigits = form.phone.replace(/\D/g, '');
           if (phoneDigits.length < 10) throw new Error('Informe um número de WhatsApp válido com DDD.');
           const { error: rpcErr } = await supabase.rpc('register_user_profile', {
             p_full_name: user.name,
@@ -265,7 +217,7 @@ export default function CheckoutPage() {
 
       if (!sessionToken) throw new Error('Sessão inválida. Faça login novamente.');
 
-      // 3. Chama o checkout do Stripe
+      // 2. Chama a API do Checkout do Stripe
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: {
@@ -276,48 +228,22 @@ export default function CheckoutPage() {
 
       const result = await res.json();
       if (result.error) throw new Error(result.error);
-      if (!result.url) throw new Error('Erro ao gerar link de pagamento.');
 
-      // 4. Redireciona para o Stripe Checkout
-      window.location.href = result.url;
-
+      // 3. Redireciona para o Stripe Checkout Session
+      if (result.url) {
+        window.location.href = result.url;
+      } else {
+        throw new Error('Falha ao gerar URL de checkout do Stripe.');
+      }
 
     } catch (err: any) {
       setError(friendlyError(err?.message || 'Erro desconhecido'));
-    } finally {
       setSubmitting(false);
     }
   };
 
-  // ── Loading ───────────────────────────────────────────────────────────────
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
-        <Loader2 className="animate-spin text-brand-500 w-8 h-8" />
-      </div>
-    );
-  }
-
-  // ── Success ───────────────────────────────────────────────────────────────
-  if (done) {
-    return (
-      <div className="min-h-screen bg-gray-950 flex items-center justify-center px-4">
-        <div className="text-center animate-in fade-in zoom-in duration-500">
-          <div className="w-24 h-24 bg-brand-500/10 border border-brand-500/30 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle2 className="text-brand-500 w-12 h-12" />
-          </div>
-          <h1 className="text-3xl font-bold text-white mb-2">Assinatura ativa! 🎉</h1>
-          <p className="text-gray-400 mb-1">Bem-vindo ao FoodSnap PRO. Pode começar a usar agora!</p>
-          <p className="text-gray-600 text-sm">Redirecionando para o painel...</p>
-        </div>
-      </div>
-    );
-  }
-
   // Usuário logado via Google sem telefone
   const googleUserNeedsPhone = !!user && !user.phone;
-  // Usuário logado com telefone (só precisa do cartão)
-  const needsOnlyCard = !!user && !!user.phone;
 
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
@@ -335,7 +261,7 @@ export default function CheckoutPage() {
 
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-500/10 border border-brand-500/20 rounded-full mb-4">
               <Zap size={12} className="text-brand-400" fill="currentColor" />
-              <span className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">1º Mês por R$ 4,99</span>
+              <span className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">1º Mês por R$ 5,00</span>
             </div>
 
             <h1 className="text-2xl font-bold text-white mb-1">Plano PRO</h1>
@@ -359,7 +285,7 @@ export default function CheckoutPage() {
               </div>
               <div className="text-right">
                 <p className="text-gray-500 text-xs uppercase tracking-wider mb-0.5">Hoje</p>
-                <p className="text-brand-400 font-bold text-lg">R$ 4,99</p>
+                <p className="text-brand-400 font-bold text-lg">R$ 5,00</p>
               </div>
             </div>
           </div>
@@ -372,7 +298,7 @@ export default function CheckoutPage() {
         </div>
 
         {/* ── RIGHT: Step-by-step Form ──────────────────────────────────── */}
-        <div className="bg-gray-950 p-8 md:p-10 overflow-y-auto max-h-screen">
+        <div className="bg-gray-950 p-8 md:p-10 flex flex-col justify-center min-h-[480px]">
 
           {/* Error */}
           {error && (
@@ -384,7 +310,7 @@ export default function CheckoutPage() {
           <form onSubmit={handleFormSubmit} className="space-y-5">
             {step === 'account' ? (
               // ── STEP 1: CADASTRO / LOGIN ──
-              <div className="space-y-5">
+              <div className="space-y-5 animate-in fade-in duration-300">
                 <div className="flex items-center justify-between mb-2">
                   <h2 className="text-base font-bold text-white">
                     {authMode === 'register' ? 'Crie sua conta' : 'Acesse sua conta'}
@@ -458,7 +384,7 @@ export default function CheckoutPage() {
               </div>
             ) : (
               // ── STEP 2: PAGAMENTO ──
-              <div className="space-y-5">
+              <div className="space-y-5 animate-in fade-in duration-300">
                 {/* Identificação do Usuário */}
                 <div className="flex items-center justify-between mb-2 border-b border-gray-800 pb-4">
                   <div>
@@ -480,7 +406,7 @@ export default function CheckoutPage() {
                   </button>
                 </div>
 
-                {/* Se for Google User sem telefone, ou se por algum motivo está logado sem telefone */}
+                {/* Se for Google User sem telefone */}
                 {googleUserNeedsPhone && (
                   <div className="space-y-2">
                     <label className="block text-xs font-semibold text-gray-400">Vincular WhatsApp</label>
@@ -493,22 +419,57 @@ export default function CheckoutPage() {
                   </div>
                 )}
 
-                <button type="button" onClick={handleSubmit} disabled={submitting}
-                  className="w-full py-4 mt-6 bg-brand-500 hover:bg-brand-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 text-sm">
+                {/* Stripe Redirection Information */}
+                <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 space-y-3">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="text-brand-500 w-5 h-5 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-white text-sm font-bold">Pagamento 100% Seguro</p>
+                      <p className="text-gray-400 text-xs mt-1 leading-relaxed">
+                        Você será redirecionado para a página segura de pagamentos do **Stripe** para concluir a assinatura.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3">
+                    <CheckCircle2 className="text-brand-500 w-5 h-5 shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-white text-sm font-bold">Sem Digitação de Cartão Aqui</p>
+                      <p className="text-gray-400 text-xs mt-1 leading-relaxed">
+                        Nenhum dado de cartão de crédito é processado ou armazenado nos nossos servidores.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-white uppercase tracking-wider">Finalizar Assinatura</h3>
+                    {!user && (
+                      <button type="button" onClick={handleBackToAccount} className="text-xs text-brand-400 hover:text-brand-300 font-semibold transition-colors">
+                        ← Alterar cadastro
+                      </button>
+                    )}
+                  </div>
+
+                  <p className="text-gray-400 text-xs leading-normal">
+                    Valor cobrado hoje: <span className="text-brand-400 font-bold">R$ 5,00</span>.<br />
+                    Renovação automática no próximo mês por <span className="text-white font-semibold">R$ 14,99/mês</span>. Cancele com um clique quando quiser.
+                  </p>
+                </div>
+
+                <button type="submit" disabled={submitting}
+                  className="w-full py-4 bg-brand-500 hover:bg-brand-600 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold rounded-xl transition-all flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 text-base">
                   {submitting ? (
-                    <><Loader2 size={16} className="animate-spin" /> Gerando link seguro...</>
+                    <><Loader2 size={18} className="animate-spin" /> Redirecionando...</>
                   ) : (
-                    <><Lock size={14} /> Assinar por R$ 4,99 <ArrowRight size={16} /></>
+                    <><Lock size={16} /> Ir para Pagamento Seguro <ArrowRight size={18} /></>
                   )}
                 </button>
 
-                <p className="text-center text-gray-600 text-xs pb-2 mt-4">
-                  Hoje R$ 4,99 · 2º mês em diante R$ 14,99/mês · Cancele quando quiser
+                <p className="text-center text-gray-500 text-[11px] leading-relaxed">
+                  Ao clicar em "Ir para Pagamento Seguro" você concorda com nossos Termos de Uso e Política de Privacidade.
                 </p>
-                
-                <div className="flex items-center justify-center gap-4 mt-6">
-                   <span className="text-[10px] text-gray-500 flex items-center gap-1"><Lock size={10} /> Pagamento Seguro via Stripe</span>
-                </div>
               </div>
             )}
           </form>

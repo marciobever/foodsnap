@@ -1,21 +1,15 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
-import Stripe from 'stripe';
 
 export const runtime = 'nodejs';
 export const dynamic = 'force-dynamic';
-
-const stripeSecretKey =
-  (process.env.STRIPE_SECRET_KEY || '').trim() || 'sk_test_dummy_key_for_build';
-
-const stripe = new Stripe(stripeSecretKey);
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export async function POST(req: Request) {
+export async function GET(req: Request) {
   try {
     const authHeader = req.headers.get('Authorization');
 
@@ -38,41 +32,35 @@ export async function POST(req: Request) {
       .from('subscriptions')
       .select('*')
       .eq('user_id', user.id)
-      .in('status', ['active', 'trialing'])
       .maybeSingle();
 
-    if (subscriptionError || !subscription?.stripe_subscription_id) {
-      return NextResponse.json(
-        { error: 'Nenhuma assinatura ativa encontrada no Stripe' },
-        { status: 404 }
-      );
+    if (subscriptionError) {
+      throw subscriptionError;
     }
 
-    const stripeSubscription = await stripe.subscriptions.update(
-      subscription.stripe_subscription_id,
-      {
-        cancel_at_period_end: true,
-      }
-    );
+    if (!subscription) {
+      return NextResponse.json({
+        active: false,
+        plan: 'free',
+        status: 'none',
+        validUntil: null,
+      });
+    }
 
-    await supabaseAdmin
-      .from('subscriptions')
-      .update({
-        status: stripeSubscription.status,
-        cancel_at_period_end: true,
-      })
-      .eq('user_id', user.id);
+    // A assinatura é considerada ativa se status for 'active' ou 'trialing'
+    const isActive = ['active', 'trialing'].includes(subscription.status);
 
     return NextResponse.json({
-      success: true,
-      message:
-        'Assinatura cancelada com sucesso. Você terá acesso até o fim do ciclo atual.',
+      active: isActive,
+      plan: subscription.plan || 'free',
+      status: subscription.status,
+      validUntil: subscription.valid_until,
     });
   } catch (error: any) {
-    console.error('Cancel Subscription Error:', error);
+    console.error('Subscription Status Error:', error);
 
     return NextResponse.json(
-      { error: error.message || 'Erro interno ao cancelar assinatura' },
+      { error: error.message || 'Erro interno ao obter status da assinatura' },
       { status: 500 }
     );
   }

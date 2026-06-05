@@ -2,6 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import { Scan, Menu, X, Zap, ArrowRight, Globe, Calculator } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useUser } from '@/contexts/UserContext';
+
 
 interface HeaderProps {
   onRegister: () => void;
@@ -15,6 +17,8 @@ const Header: React.FC<HeaderProps> = ({ onRegister, onLogin, onOpenTools, onNav
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [langMenuOpen, setLangMenuOpen] = useState(false);
   const { language, setLanguage, t } = useLanguage();
+  const { user, logout } = useUser();
+
 
   useEffect(() => {
     const handleScroll = () => {
@@ -141,14 +145,33 @@ const Header: React.FC<HeaderProps> = ({ onRegister, onLogin, onOpenTools, onNav
 
 
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => onLogin()}
-              className="group bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-md shadow-brand-500/20 flex items-center gap-2 hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
-            >
-              Acessar
-              <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-            </button>
+            {user ? (
+              <>
+                <a
+                  href="/dashboard"
+                  className="group bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-md shadow-brand-500/20 flex items-center gap-2 hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
+                >
+                  Acessar Painel
+                  <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+                </a>
+                <button
+                  onClick={() => logout()}
+                  className="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors"
+                >
+                  Sair
+                </button>
+              </>
+            ) : (
+              <button
+                onClick={() => onLogin()}
+                className="group bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-md shadow-brand-500/20 flex items-center gap-2 hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
+              >
+                Acessar
+                <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            )}
           </div>
+
         </nav>
 
         {/* Mobile Menu Toggle */}
@@ -191,25 +214,49 @@ const Header: React.FC<HeaderProps> = ({ onRegister, onLogin, onOpenTools, onNav
           </div>
 
           <div className="flex flex-col gap-3 mt-2">
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onLogin();
-              }}
-              className="text-gray-600 font-semibold py-2"
-            >
-              {t.header.login}
-            </button>
-            <button
-              onClick={() => {
-                setMobileMenuOpen(false);
-                onRegister();
-              }}
-              className="bg-brand-600 text-white text-center py-3.5 rounded-xl font-semibold shadow-md w-full"
-            >
-              {t.header.cta}
-            </button>
+            {user ? (
+              <>
+                <a
+                  href="/dashboard"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="bg-brand-600 text-white text-center py-3.5 rounded-xl font-semibold shadow-md w-full block"
+                >
+                  Acessar Painel
+                </a>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logout();
+                  }}
+                  className="text-red-600 font-semibold py-2 text-center"
+                >
+                  Sair
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onLogin();
+                  }}
+                  className="text-gray-600 font-semibold py-2"
+                >
+                  {t.header.login}
+                </button>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    onRegister();
+                  }}
+                  className="bg-brand-600 text-white text-center py-3.5 rounded-xl font-semibold shadow-md w-full"
+                >
+                  {t.header.cta}
+                </button>
+              </>
+            )}
           </div>
+
         </div>
       )}
     </header>

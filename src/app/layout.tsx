@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Outfit } from 'next/font/google';
+import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { Providers } from './Providers';
 import { Toaster } from 'sonner';
@@ -9,6 +9,13 @@ const outfit = Outfit({
   display: 'swap',
   variable: '--font-outfit',
 });
+
+const plusJakartaSans = Plus_Jakarta_Sans({
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-sans',
+});
+
 
 export const metadata: Metadata = {
   title: 'FoodSnap.ai - Nutricionista de Bolso com Inteligência Artificial',
@@ -39,8 +46,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR" className={`scroll-smooth ${outfit.variable}`}>
-      <body className="font-outfit bg-[#f8fafc] text-gray-900 selection:bg-brand-100 selection:text-brand-900">
+    <html lang="pt-BR" className={`scroll-smooth ${outfit.variable} ${plusJakartaSans.variable}`}>
+      <body className="font-sans bg-[#f8fafc] text-gray-900 selection:bg-brand-100 selection:text-brand-900">
         <Providers>
           {children}
           <Toaster position="bottom-center" richColors theme="light" />
@@ -49,3 +56,4 @@ export default function RootLayout({
     </html>
   );
 }
+

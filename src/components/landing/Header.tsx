@@ -1,6 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { Scan, Menu, X, Zap, ArrowRight, Globe, Calculator } from 'lucide-react';
+import Link from 'next/link';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useUser } from '@/contexts/UserContext';
 
@@ -147,13 +148,13 @@ const Header: React.FC<HeaderProps> = ({ onRegister, onLogin, onOpenTools, onNav
           <div className="flex items-center gap-4">
             {user ? (
               <>
-                <a
+                <Link
                   href="/dashboard"
                   className="group bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-md shadow-brand-500/20 flex items-center gap-2 hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
                 >
                   Acessar Painel
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                </a>
+                </Link>
                 <button
                   onClick={() => logout()}
                   className="text-sm font-medium text-gray-500 hover:text-red-600 transition-colors"
@@ -216,13 +217,13 @@ const Header: React.FC<HeaderProps> = ({ onRegister, onLogin, onOpenTools, onNav
           <div className="flex flex-col gap-3 mt-2">
             {user ? (
               <>
-                <a
+                <Link
                   href="/dashboard"
                   onClick={() => setMobileMenuOpen(false)}
                   className="bg-brand-600 text-white text-center py-3.5 rounded-xl font-semibold shadow-md w-full block"
                 >
                   Acessar Painel
-                </a>
+                </Link>
                 <button
                   onClick={() => {
                     setMobileMenuOpen(false);

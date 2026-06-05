@@ -60,8 +60,8 @@ const Hero: React.FC<HeroProps> = ({ onRegister }) => {
 
       {/* Modern Background */}
       <div className="absolute top-0 inset-x-0 h-[600px] bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-brand-50 via-white to-white -z-10" />
-      <div className="absolute -top-40 right-0 w-[600px] h-[600px] bg-brand-200/20 rounded-full blur-[120px] mix-blend-multiply -z-10" />
-      <div className="absolute top-40 left-[-100px] w-[500px] h-[500px] bg-accent-200/20 rounded-full blur-[100px] mix-blend-multiply -z-10" />
+      <div className="hidden md:block absolute -top-40 right-0 w-[600px] h-[600px] bg-brand-200/20 rounded-full blur-[120px] -z-10" />
+      <div className="hidden md:block absolute top-40 left-[-100px] w-[500px] h-[500px] bg-accent-200/20 rounded-full blur-[100px] -z-10" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20">
@@ -151,7 +151,7 @@ const Hero: React.FC<HeroProps> = ({ onRegister }) => {
               {/* Screen */}
               <div className="w-full h-[680px] bg-gray-50 flex flex-col font-sans">
                 {/* Header Mockup */}
-                <div className="bg-white/90 backdrop-blur-md p-4 pt-12 border-b border-gray-200 flex items-center justify-between sticky top-0 z-10">
+                <div className="bg-white/95 md:bg-white/90 md:backdrop-blur-md p-4 pt-12 border-b border-gray-200 flex items-center justify-between sticky top-0 z-10">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-brand-950 text-brand-500 flex items-center justify-center shadow-lg shadow-brand-900/20 border border-brand-900/10">
                       <Scan size={18} />

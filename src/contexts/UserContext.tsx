@@ -142,7 +142,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
 
     const logout = async () => {
         await supabase.auth.signOut();
-        // State updates handled by onAuthStateChange
+        setUser(null);
+        window.location.href = '/';
     };
 
     const toggleAdminView = () => {

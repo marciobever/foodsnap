@@ -115,7 +115,7 @@ const Features: React.FC = () => {
             <div className="relative w-full max-w-lg aspect-[4/5] sm:aspect-square">
 
               {/* Abstract Background Blob */}
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-brand-100/50 via-blue-50/50 to-purple-50/50 rounded-full blur-3xl -z-10"></div>
+              <div className="hidden md:block absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-brand-100/50 via-blue-50/50 to-purple-50/50 rounded-full blur-3xl -z-10"></div>
 
               {/* Main Card Image Container */}
               <div className="relative h-full w-full rounded-[2.5rem] overflow-hidden shadow-2xl border border-white/50 bg-white ring-1 ring-black/5 transform rotate-[-2deg] hover:rotate-0 transition-transform duration-500">
@@ -150,7 +150,7 @@ const Features: React.FC = () => {
 
               {/* Bottom Left: Visual Tip (Chat Bubble style) */}
               <div className="absolute top-12 -left-8 max-w-[240px] z-30">
-                <div className="bg-white/90 backdrop-blur-md shadow-xl p-4 rounded-2xl rounded-tr-none border border-gray-100 relative transform transition-transform hover:scale-105 duration-300">
+                <div className="bg-white/95 md:bg-white/90 md:backdrop-blur-md shadow-xl p-4 rounded-2xl rounded-tr-none border border-gray-100 relative transform transition-transform hover:scale-105 duration-300">
                   <div className="flex gap-3 items-start">
                     <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 rounded-full text-white shrink-0 shadow-lg shadow-blue-500/30">
                       <Sparkles size={16} fill="currentColor" />
@@ -166,8 +166,8 @@ const Features: React.FC = () => {
               </div>
 
               {/* Bottom Center: Macro Analysis Card (Simulating App UI) */}
-              <div className="absolute bottom-8 inset-x-8 z-20">
-                <div className="bg-white/95 backdrop-blur-xl border border-gray-200 p-5 rounded-2xl shadow-2xl shadow-gray-900/10">
+              <div className="absolute bottom-8 inset-x-8 z-20 hidden sm:block">
+                <div className="bg-white/95 md:backdrop-blur-xl border border-gray-200 p-5 rounded-2xl shadow-2xl shadow-gray-900/10">
                   <div className="flex items-center justify-between mb-4">
                     <div>
                       <h4 className="text-gray-900 font-bold text-base">Salada Caesar & Frango</h4>

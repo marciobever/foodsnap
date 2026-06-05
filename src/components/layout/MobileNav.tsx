@@ -1,13 +1,14 @@
 import React from 'react';
-import { LayoutDashboard, History, CreditCard, Dumbbell, Settings, User } from 'lucide-react';
+import { LayoutDashboard, History, CreditCard, Dumbbell, Settings, User, LogOut } from 'lucide-react';
 
 interface MobileNavProps {
     activeTab: string;
     setActiveTab: (tab: any) => void;
     t: any;
+    logout: () => void;
 }
 
-const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, t }) => {
+const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, t, logout }) => {
     return (
         <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 flex justify-around p-2 pb-safe shadow-lg">
             <button
@@ -51,6 +52,13 @@ const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab, t }) => 
             >
                 <CreditCard size={20} />
                 <span className="text-[10px] font-medium">Pagamentos</span>
+            </button>
+            <button
+                onClick={() => logout()}
+                className={`flex flex-col items-center gap-1 p-2 rounded-lg text-gray-400 hover:text-red-600`}
+            >
+                <LogOut size={20} />
+                <span className="text-[10px] font-medium">Sair</span>
             </button>
         </div>
     );

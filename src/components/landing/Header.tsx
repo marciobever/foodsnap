@@ -148,11 +148,14 @@ const Header: React.FC<HeaderProps> = ({ onRegister, onLogin, onOpenTools, onNav
           <div className="flex items-center gap-4">
             {user ? (
               <>
+                <span className="text-sm font-medium text-gray-700 hidden lg:block">
+                  Olá, {user.name.split(' ')[0]}
+                </span>
                 <Link
-                  href="/dashboard"
+                  href={user.plan === 'pro' ? "/dashboard" : "/checkout"}
                   className="group bg-brand-600 hover:bg-brand-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition-all shadow-md shadow-brand-500/20 flex items-center gap-2 hover:-translate-y-0.5 cursor-pointer whitespace-nowrap"
                 >
-                  Acessar Painel
+                  {user.plan === 'pro' ? 'Acessar Painel' : 'Assinar Agora'}
                   <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <button
@@ -217,12 +220,15 @@ const Header: React.FC<HeaderProps> = ({ onRegister, onLogin, onOpenTools, onNav
           <div className="flex flex-col gap-3 mt-2">
             {user ? (
               <>
+                <div className="text-center py-1">
+                  <span className="text-sm font-medium text-gray-700">Olá, {user.name.split(' ')[0]} 👋</span>
+                </div>
                 <Link
-                  href="/dashboard"
+                  href={user.plan === 'pro' ? "/dashboard" : "/checkout"}
                   onClick={() => setMobileMenuOpen(false)}
                   className="bg-brand-600 text-white text-center py-3.5 rounded-xl font-semibold shadow-md w-full block"
                 >
-                  Acessar Painel
+                  {user.plan === 'pro' ? 'Acessar Painel' : 'Assinar Agora'}
                 </Link>
                 <button
                   onClick={() => {

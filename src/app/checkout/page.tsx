@@ -11,10 +11,8 @@ import {
 
 // ── Formatters ──────────────────────────────────────────────────────────────
 function formatPhone(v: string) {
-  const d = v.replace(/\D/g, '').slice(0, 11);
-  if (d.length >= 7) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
-  if (d.length >= 3) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
-  return d;
+  // Allow digits, plus sign and spaces for international format
+  return v.replace(/[^\d+ ]/g, '');
 }
 
 const FEATURES = [
@@ -113,8 +111,8 @@ export default function CheckoutPage() {
       setError(null);
       if (!form.name.trim()) throw new Error('Informe seu nome completo.');
       if (!form.email.trim() || !form.email.includes('@')) throw new Error('Informe um e-mail válido.');
-      const phoneDigits = form.phone.replace(/\D/g, '');
-      if (phoneDigits.length < 10) throw new Error('Informe um número de WhatsApp válido com DDD.');
+      const phoneDigits = form.phone.replace(/[^\d+]/g, '');
+      if (phoneDigits.replace(/\D/g, '').length < 10) throw new Error('Informe um número de WhatsApp válido com código do país e DDD.');
       if (form.password.length < 6) throw new Error('A senha deve ter pelo menos 6 caracteres.');
       
       setStep('payment');
@@ -172,8 +170,8 @@ export default function CheckoutPage() {
 
       // 1. Se não está logado: cria conta e registra perfil
       if (!user) {
-        const phoneDigits = form.phone.replace(/\D/g, '');
-        if (phoneDigits.length < 10) throw new Error('Informe um número de WhatsApp válido com DDD.');
+        const phoneDigits = form.phone.replace(/[^\d+]/g, '');
+        if (phoneDigits.replace(/\D/g, '').length < 10) throw new Error('Informe um número de WhatsApp válido com código do país e DDD.');
 
         // Cria conta no Supabase
         const { data, error: signUpErr } = await supabase.auth.signUp({
@@ -201,9 +199,9 @@ export default function CheckoutPage() {
 
       } else {
         // Já logado (Google / Login por Email) — salva telefone se ainda não tem
-        const phoneDigits = form.phone.replace(/\D/g, '');
+        const phoneDigits = form.phone.replace(/[^\d+]/g, '');
         if (!user.phone) {
-          if (phoneDigits.length < 10) throw new Error('Informe um número de WhatsApp válido com DDD.');
+          if (phoneDigits.replace(/\D/g, '').length < 10) throw new Error('Informe um número de WhatsApp válido com código do país e DDD.');
           const { error: rpcErr } = await supabase.rpc('register_user_profile', {
             p_full_name: user.name,
             p_phone: phoneDigits,
@@ -354,7 +352,7 @@ export default function CheckoutPage() {
                     <div className="relative">
                       <MessageCircle size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500" />
                       <input name="phone" type="tel" required value={form.phone} onChange={handleChange}
-                        placeholder="WhatsApp com DDD (ex: (11) 99999-9999)"
+                        placeholder="WhatsApp (ex: +55 11 99999-9999 ou +44 79...)"
                         className="w-full bg-gray-800 border border-gray-700 focus:border-green-500 text-white placeholder-gray-600 rounded-lg px-4 py-2.5 pl-9 text-sm outline-none transition-colors" />
                     </div>
                   )}
@@ -413,7 +411,7 @@ export default function CheckoutPage() {
                     <div className="relative">
                       <MessageCircle size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-green-500" />
                       <input name="phone" type="tel" required value={form.phone} onChange={handleChange}
-                        placeholder="WhatsApp com DDD (ex: (11) 99999-9999)"
+                        placeholder="WhatsApp (ex: +55 11 99999-9999 ou +44 79...)"
                         className="w-full bg-gray-800 border border-gray-700 focus:border-green-500 text-white placeholder-gray-600 rounded-lg px-4 py-2.5 pl-9 text-sm outline-none transition-colors" />
                     </div>
                   </div>

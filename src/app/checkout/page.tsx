@@ -111,7 +111,7 @@ export default function CheckoutPage() {
       setError(null);
       if (!form.name.trim()) throw new Error('Informe seu nome completo.');
       if (!form.email.trim() || !form.email.includes('@')) throw new Error('Informe um e-mail válido.');
-      const phoneDigits = form.phone.replace(/[^\d+]/g, '');
+      const phoneDigits = form.phone.replace(/\D/g, '');
       if (phoneDigits.replace(/\D/g, '').length < 10) throw new Error('Informe um número de WhatsApp válido com código do país e DDD.');
       if (form.password.length < 6) throw new Error('A senha deve ter pelo menos 6 caracteres.');
       
@@ -170,7 +170,7 @@ export default function CheckoutPage() {
 
       // 1. Se não está logado: cria conta e registra perfil
       if (!user) {
-        const phoneDigits = form.phone.replace(/[^\d+]/g, '');
+        const phoneDigits = form.phone.replace(/\D/g, '');
         if (phoneDigits.replace(/\D/g, '').length < 10) throw new Error('Informe um número de WhatsApp válido com código do país e DDD.');
 
         // Cria conta no Supabase
@@ -199,7 +199,7 @@ export default function CheckoutPage() {
 
       } else {
         // Já logado (Google / Login por Email) — salva telefone se ainda não tem
-        const phoneDigits = form.phone.replace(/[^\d+]/g, '');
+        const phoneDigits = form.phone.replace(/\D/g, '');
         if (!user.phone) {
           if (phoneDigits.replace(/\D/g, '').length < 10) throw new Error('Informe um número de WhatsApp válido com código do país e DDD.');
           const { error: rpcErr } = await supabase.rpc('register_user_profile', {

@@ -2,7 +2,8 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key_for_build', {
+const stripeSecretKey = (process.env.STRIPE_SECRET_KEY || '').trim() || 'sk_test_dummy_key_for_build';
+const stripe = new Stripe(stripeSecretKey, {
     apiVersion: '2026-05-27.dahlia',
 });
 
@@ -65,7 +66,7 @@ export async function POST(req: Request) {
         const origin = req.headers.get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
 
         // Montar a configuração de descontos (Cupom)
-        const couponId = process.env.STRIPE_COUPON_ID;
+        const couponId = (process.env.STRIPE_COUPON_ID || '').trim();
         const discounts = couponId ? [{ coupon: couponId }] : undefined;
 
         // Criar a sessão de Checkout do Stripe
@@ -74,7 +75,7 @@ export async function POST(req: Request) {
             payment_method_types: ['card'],
             line_items: [
                 {
-                    price: process.env.STRIPE_PRICE_ID,
+                    price: (process.env.STRIPE_PRICE_ID || '').trim(),
                     quantity: 1,
                 },
             ],

@@ -3,11 +3,12 @@ import { headers } from 'next/headers';
 import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || 'sk_test_dummy_key_for_build', {
+const stripeSecretKey = (process.env.STRIPE_SECRET_KEY || '').trim() || 'sk_test_dummy_key_for_build';
+const stripe = new Stripe(stripeSecretKey, {
     apiVersion: '2026-05-27.dahlia',
 });
 
-const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET || ''; // Configured via Vercel env vars
+const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET || '').trim();
 
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,

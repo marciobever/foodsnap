@@ -1,0 +1,13 @@
+export interface User {
+    id: string;
+    name: string;
+    email: string;
+    phone?: string;
+    plan: 'free' | 'pro';
+    public_id: string;
+    avatar?: string;
+    plan_valid_until?: string;
+    is_admin?: boolean;
+    is_professional?: boolean;
+    coach_personality?: string;
+}

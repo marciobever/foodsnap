@@ -1,0 +1,5 @@
+{
+  "name": "FoodSnap",
+  "description": "Instant nutritional analysis from a simple photo.",
+  "requestFramePermissions": []
+}

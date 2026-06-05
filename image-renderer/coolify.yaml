@@ -1,0 +1,14 @@
+# Configuração do Coolify Nixpacks
+# O Coolify vai ler isso na raiz para o serviço específico "image-renderer"
+
+preBuild:
+  - npm ci
+
+start:
+  - node index.js
+
+# Variáveis do Node / Chrome
+envs:
+  - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+  - PUPPETEER_EXECUTABLE_PATH=/usr/bin/google-chrome-stable
+  - NODE_ENV=production

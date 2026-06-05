@@ -28,10 +28,28 @@ function formatCEP(v: string) {
   return v.replace(/\D/g, '').slice(0, 8).replace(/(\d{5})(\d)/, '$1-$2');
 }
 function formatPhone(v: string) {
-  const d = v.replace(/\D/g, '').slice(0, 11);
-  if (d.length >= 7) return `(${d.slice(0, 2)}) ${d.slice(2, 7)}-${d.slice(7)}`;
-  if (d.length >= 3) return `(${d.slice(0, 2)}) ${d.slice(2)}`;
-  return d;
+  const hasPlus = v.startsWith('+');
+  const digits = v.replace(/\D/g, '');
+  
+  if (digits.length === 0) return '';
+  
+  if (hasPlus || digits.length > 11) {
+    return '+' + digits.slice(0, 15);
+  }
+  
+  if (digits.length === 11) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7, 11)}`;
+  }
+  if (digits.length === 10) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 6)}-${digits.slice(6, 10)}`;
+  }
+  if (digits.length >= 7) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+  }
+  if (digits.length >= 3) {
+    return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  }
+  return digits;
 }
 
 const FEATURES = [
@@ -317,7 +335,7 @@ export default function CheckoutPage() {
 
             <div className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-brand-500/10 border border-brand-500/20 rounded-full mb-4">
               <Zap size={12} className="text-brand-400" fill="currentColor" />
-              <span className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">1º Mês por R$ 5,00</span>
+              <span className="text-[10px] font-bold text-brand-400 uppercase tracking-widest">1º Mês por R$ 4,99</span>
             </div>
 
             <h1 className="text-2xl font-bold text-white mb-1">Plano PRO</h1>
@@ -341,7 +359,7 @@ export default function CheckoutPage() {
               </div>
               <div className="text-right">
                 <p className="text-gray-500 text-xs uppercase tracking-wider mb-0.5">Hoje</p>
-                <p className="text-brand-400 font-bold text-lg">R$ 5,00</p>
+                <p className="text-brand-400 font-bold text-lg">R$ 4,99</p>
               </div>
             </div>
           </div>
@@ -349,7 +367,7 @@ export default function CheckoutPage() {
           <div className="flex items-center gap-5 mt-8 pt-6 border-t border-gray-800">
             <div className="flex items-center gap-1.5 text-gray-600 text-xs"><Lock size={11} /><span>SSL 256-bit</span></div>
             <div className="flex items-center gap-1.5 text-gray-600 text-xs"><ShieldCheck size={11} /><span>PCI-DSS</span></div>
-            <div className="flex items-center gap-1.5 text-gray-600 text-xs"><CreditCard size={11} /><span>Asaas</span></div>
+            <div className="flex items-center gap-1.5 text-gray-600 text-xs"><CreditCard size={11} /><span>Stripe</span></div>
           </div>
         </div>
 
@@ -480,12 +498,12 @@ export default function CheckoutPage() {
                   {submitting ? (
                     <><Loader2 size={16} className="animate-spin" /> Gerando link seguro...</>
                   ) : (
-                    <><Lock size={14} /> Assinar por R$ 5,00 <ArrowRight size={16} /></>
+                    <><Lock size={14} /> Assinar por R$ 4,99 <ArrowRight size={16} /></>
                   )}
                 </button>
 
                 <p className="text-center text-gray-600 text-xs pb-2 mt-4">
-                  Hoje R$ 5,00 · 2º mês em diante R$ 14,99/mês · Cancele quando quiser
+                  Hoje R$ 4,99 · 2º mês em diante R$ 14,99/mês · Cancele quando quiser
                 </p>
                 
                 <div className="flex items-center justify-center gap-4 mt-6">

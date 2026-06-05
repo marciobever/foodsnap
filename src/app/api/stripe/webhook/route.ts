@@ -8,9 +8,7 @@ export const dynamic = 'force-dynamic';
 const stripeSecretKey =
   (process.env.STRIPE_SECRET_KEY || '').trim() || 'sk_test_dummy_key_for_build';
 
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2026-05-27.dahlia',
-});
+const stripe = new Stripe(stripeSecretKey);
 
 const webhookSecret = (process.env.STRIPE_WEBHOOK_SECRET || '').trim();
 
@@ -64,9 +62,10 @@ export async function POST(req: Request) {
         }
 
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
+        const subscriptionAny = subscription as any;
 
-        const validUntil = subscription.current_period_end
-          ? new Date(subscription.current_period_end * 1000).toISOString()
+        const validUntil = subscriptionAny.current_period_end
+          ? new Date(subscriptionAny.current_period_end * 1000).toISOString()
           : null;
 
         await supabaseAdmin.from('subscriptions').upsert(
@@ -77,7 +76,7 @@ export async function POST(req: Request) {
             status: subscription.status,
             plan: 'pro',
             valid_until: validUntil,
-            cancel_at_period_end: subscription.cancel_at_period_end,
+            cancel_at_period_end: subscriptionAny.cancel_at_period_end,
           },
           { onConflict: 'user_id' }
         );
@@ -139,9 +138,10 @@ export async function POST(req: Request) {
 
       case 'customer.subscription.updated': {
         const subscription = event.data.object as Stripe.Subscription;
+        const subscriptionAny = subscription as any;
 
-        const validUntil = subscription.current_period_end
-          ? new Date(subscription.current_period_end * 1000).toISOString()
+        const validUntil = subscriptionAny.current_period_end
+          ? new Date(subscriptionAny.current_period_end * 1000).toISOString()
           : null;
 
         await supabaseAdmin
@@ -149,7 +149,7 @@ export async function POST(req: Request) {
           .update({
             status: subscription.status,
             valid_until: validUntil,
-            cancel_at_period_end: subscription.cancel_at_period_end,
+            cancel_at_period_end: subscriptionAny.cancel_at_period_end,
           })
           .eq('stripe_subscription_id', subscription.id);
 

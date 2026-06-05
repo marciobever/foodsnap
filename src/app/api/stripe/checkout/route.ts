@@ -8,9 +8,7 @@ export const dynamic = 'force-dynamic';
 const stripeSecretKey =
   (process.env.STRIPE_SECRET_KEY || '').trim() || 'sk_test_dummy_key_for_build';
 
-const stripe = new Stripe(stripeSecretKey, {
-  apiVersion: '2026-05-27.dahlia',
-});
+const stripe = new Stripe(stripeSecretKey);
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -60,13 +58,20 @@ export async function POST(req: Request) {
       );
     }
 
-    const { data: profile } = await supabaseAdmin
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('id, full_name, stripe_customer_id')
       .eq('id', user.id)
       .single();
 
-    let stripeCustomerId = profile?.stripe_customer_id;
+    if (profileError || !profile) {
+      return NextResponse.json(
+        { error: 'Perfil do usuário não encontrado' },
+        { status: 404 }
+      );
+    }
+
+    let stripeCustomerId = profile.stripe_customer_id;
 
     if (!stripeCustomerId) {
       const customers = await stripe.customers.search({
@@ -79,7 +84,7 @@ export async function POST(req: Request) {
       } else {
         const newCustomer = await stripe.customers.create({
           email: user.email,
-          name: profile?.full_name || '',
+          name: profile.full_name || '',
           metadata: {
             supabase_user_id: user.id,
           },

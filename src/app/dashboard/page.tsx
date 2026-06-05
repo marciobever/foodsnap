@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import Dashboard from '@/pages/Dashboard';
+import Dashboard from '@/views/Dashboard';
 import { useUser } from '@/contexts/UserContext';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Loader2, CheckCircle2, AlertTriangle, ArrowRight } from 'lucide-react';

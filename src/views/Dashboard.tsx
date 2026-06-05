@@ -161,7 +161,7 @@ export default function Dashboard({
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
+    <div className="min-h-screen bg-gray-50">
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -171,8 +171,8 @@ export default function Dashboard({
         t={t}
       />
       
-      <div className="flex-1 md:pl-64 pb-20 md:pb-0 overflow-hidden w-full">
-        <main className="p-4 md:p-8 max-w-7xl mx-auto w-full">
+      <div className="md:pl-64 pb-20 md:pb-0 overflow-x-hidden min-h-screen flex flex-col">
+        <main className="p-4 md:p-8 max-w-7xl mx-auto w-full flex-1">
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}

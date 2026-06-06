@@ -3,6 +3,7 @@ import { Outfit, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { Providers } from './Providers';
 import { Toaster } from 'sonner';
+import { Analytics } from "@vercel/analytics/next";
 
 const outfit = Outfit({ 
   subsets: ['latin'],
@@ -51,6 +52,7 @@ export default function RootLayout({
         <Providers>
           {children}
           <Toaster position="bottom-center" richColors theme="light" />
+          <Analytics />
         </Providers>
       </body>
     </html>

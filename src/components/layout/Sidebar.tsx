@@ -26,7 +26,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, onLogo
     };
 
     return (
-        <aside className="w-64 bg-white/80 backdrop-blur-xl border-r border-gray-200/50 fixed h-full z-20 hidden md:flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <aside className="w-64 bg-white/80 backdrop-blur-xl border-r border-gray-200/50 fixed top-0 left-0 h-full z-20 hidden md:flex flex-col shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
             <div className="p-6 border-b border-gray-100 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-brand-900 rounded-lg flex items-center justify-center text-brand-400">

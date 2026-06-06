@@ -4,6 +4,7 @@ import './globals.css';
 import { Providers } from './Providers';
 import { Toaster } from 'sonner';
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const outfit = Outfit({ 
   subsets: ['latin'],
@@ -53,6 +54,7 @@ export default function RootLayout({
           {children}
           <Toaster position="bottom-center" richColors theme="light" />
           <Analytics />
+          <SpeedInsights />
         </Providers>
       </body>
     </html>

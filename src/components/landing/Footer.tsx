@@ -71,9 +71,9 @@ const Footer: React.FC<FooterProps> = ({ onRegister, onNavigate }) => {
               <li><a href="#features" onClick={(e) => handleHomeClick(e, 'features')} className="hover:text-brand-400 transition-colors">{t.header.features}</a></li>
               <li><a href="#pricing" onClick={(e) => handleHomeClick(e, 'pricing')} className="hover:text-brand-400 transition-colors">{t.header.pricing}</a></li>
               <li>
-                <button onClick={handleFaqClick} className="hover:text-brand-400 transition-colors text-left">
+                <a href="/faq" className="hover:text-brand-400 transition-colors text-left">
                   FAQ / Ajuda
-                </button>
+                </a>
               </li>
             </ul>
           </div>
@@ -82,19 +82,19 @@ const Footer: React.FC<FooterProps> = ({ onRegister, onNavigate }) => {
             <h3 className="text-white font-semibold mb-6 text-sm uppercase tracking-wider">{t.footer.legal}</h3>
             <ul className="space-y-3 text-sm">
               <li>
-                <button onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('terms'); }} className="hover:text-brand-400 transition-colors text-left">
+                <a href="/termos" className="hover:text-brand-400 transition-colors text-left">
                   Termos de Uso
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('privacy'); }} className="hover:text-brand-400 transition-colors text-left">
+                <a href="/privacidade" className="hover:text-brand-400 transition-colors text-left">
                   Política de Privacidade
-                </button>
+                </a>
               </li>
               <li>
-                <button onClick={(e) => { e.preventDefault(); if (onNavigate) onNavigate('data-deletion'); }} className="hover:text-brand-400 transition-colors text-left">
+                <a href="/exclusao-de-dados" className="hover:text-brand-400 transition-colors text-left">
                   Exclusão de Dados
-                </button>
+                </a>
               </li>
             </ul>
           </div>

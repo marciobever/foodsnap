@@ -1,6 +1,6 @@
 'use client';
 import React, { useState } from 'react';
-import { LayoutDashboard, History, CreditCard, Dumbbell, ShieldAlert, BrainCircuit, LogOut, Zap, ChevronDown, ChevronRight, Calendar, Settings, User as UserIcon } from 'lucide-react';
+import { LayoutDashboard, History, CreditCard, Dumbbell, ShieldAlert, BrainCircuit, LogOut, Zap, ChevronDown, ChevronRight, Calendar, Settings, User as UserIcon, Scale, FileText, Trash2, ExternalLink } from 'lucide-react';
 import { User } from '@/types';
 import Image from 'next/image';
 
@@ -101,6 +101,22 @@ const Sidebar: React.FC<SidebarProps> = ({ user, activeTab, setActiveTab, onLogo
                     active={activeTab === 'billing'}
                     onClick={() => setActiveTab('billing')}
                 />
+
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                    <p className="px-4 text-[10px] font-bold tracking-wider text-gray-400 uppercase mb-2">Legal</p>
+                    <a href="/termos" target="_blank" rel="noopener noreferrer" className="w-full text-left px-4 py-2 text-xs font-medium text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg flex items-center gap-3 transition-colors">
+                        <FileText size={16} className="text-gray-400" />
+                        Termos de Uso
+                    </a>
+                    <a href="/privacidade" target="_blank" rel="noopener noreferrer" className="w-full text-left px-4 py-2 text-xs font-medium text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg flex items-center gap-3 transition-colors">
+                        <Scale size={16} className="text-gray-400" />
+                        Política de Privacidade
+                    </a>
+                    <a href="/exclusao-de-dados" target="_blank" rel="noopener noreferrer" className="w-full text-left px-4 py-2 text-xs font-medium text-gray-500 hover:text-brand-600 hover:bg-brand-50 rounded-lg flex items-center gap-3 transition-colors">
+                        <Trash2 size={16} className="text-gray-400" />
+                        Exclusão de Dados
+                    </a>
+                </div>
 
                 {user.is_professional && onOpenPro && (
                     <div className="mt-4 pt-4 border-t border-gray-100">

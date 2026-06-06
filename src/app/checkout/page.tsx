@@ -16,9 +16,9 @@ function formatPhone(v: string) {
 }
 
 const FEATURES = [
-  '5 análises de refeição por dia via WhatsApp',
+  'Análises de refeição ILIMITADAS via WhatsApp',
   'Coach pessoal com 7 personalidades de IA',
-  'Avaliação física a cada 3 dias',
+  'Avaliações físicas ILIMITADAS',
   'Plano de treino e dieta personalizado',
   'Histórico completo e gráficos de evolução',
 ];

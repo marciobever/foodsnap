@@ -217,18 +217,8 @@ export async function POST(req: Request) {
           })
           .eq('stripe_subscription_id', subscription.id);
 
-        // E-mail: assinatura cancelada
-        const { data: prof } = await supabaseAdmin
-          .from('profiles')
-          .select('email, full_name')
-          .eq('stripe_customer_id', subscription.customer as string)
-          .maybeSingle();
-
-        await notifyEmail({
-          event: 'subscription_canceled',
-          email: prof?.email || null,
-          name: prof?.full_name || null,
-        });
+        // Obs: o e-mail de cancelamento é enviado na hora pela rota /api/stripe/cancel.
+        // Aqui (fim do ciclo) apenas marcamos como cancelado, sem reenviar e-mail.
 
         break;
       }

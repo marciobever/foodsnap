@@ -356,6 +356,32 @@ export async function main(
 
   if (!profile) return { error: "User not found" };
 
+  // 3.1 Limite Diário de Avaliação Física (1 por dia, horário de Brasília)
+  const nowB = new Date();
+  const startTodayBR = new Date(nowB.getTime() - 3 * 60 * 60 * 1000);
+  startTodayBR.setUTCHours(3, 0, 0, 0);
+  const { count: coachToday } = await supabase
+      .from("coach_assessments")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", profile.id)
+      .gte("created_at", startTodayBR.toISOString());
+
+  if (coachToday !== null && coachToday >= 1) {
+      await supabase.from("whatsapp_sessions").update({ state: "IDLE" }).eq("phone_number", sender_number);
+      await fetch(`${GRAPH_API}/${META_PHONE_ID}/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${META_TOKEN}` },
+          body: JSON.stringify({
+              messaging_product: "whatsapp",
+              recipient_type: "individual",
+              to: remote_jid,
+              type: "text",
+              text: { body: "🚨 *Limite de Avaliação!*\n\nVocê já gerou a sua *avaliação física de hoje*. Permitimos *1 avaliação por dia* para você ter tempo de aplicar o plano. Volte amanhã! 💪" }
+          })
+      });
+      return { success: false, reason: "coach_daily_limit" };
+  }
+
   // 4. Analisar com OpenAI
   const promptSystem = `Você é o "Titan Coach", um treinador olímpico de elite e nutricionista esportivo PhD.
 Sua missão é analisar a foto do físico de um usuário e criar um **Protocolo de Transformação** completo, rico e detalhado.

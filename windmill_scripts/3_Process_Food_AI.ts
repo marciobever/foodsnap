@@ -125,7 +125,7 @@ export async function main(
       return { success: false, error: "Limit reached" };
   }
 
-  // 1.2 Checar Limite Diário de Verificações de Prato (Máximo 5 por dia no horário de Brasília)
+  // 1.2 Checar Limite Diário de Verificações de Prato (Máximo 8 por dia no horário de Brasília)
   const now = new Date();
   const startOfTodayBrazil = new Date(now.getTime() - 3 * 60 * 60 * 1000);
   startOfTodayBrazil.setUTCHours(3, 0, 0, 0);
@@ -136,8 +136,8 @@ export async function main(
       .eq("user_id", user.id)
       .gte("created_at", startOfTodayBrazil.toISOString());
 
-  if (dailyScansCount !== null && dailyScansCount >= 5) {
-      await sendWhatsAppMessage("🚨 *Limite Diário Atingido!*\n\nVocê já realizou as *5 verificações de prato* permitidas hoje. Volte amanhã para continuar acompanhando sua alimentação! 🍽️");
+  if (dailyScansCount !== null && dailyScansCount >= 8) {
+      await sendWhatsAppMessage("🚨 *Limite Diário Atingido!*\n\nVocê já realizou as *8 verificações de prato* permitidas hoje. Volte amanhã para continuar acompanhando sua alimentação! 🍽️");
       return { success: false, error: "Daily limit reached" };
   }
 

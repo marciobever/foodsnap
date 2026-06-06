@@ -11,6 +11,7 @@ interface DashboardOverviewProps {
         public_id: string;
         plan: string;
         plan_valid_until?: string;
+        plan_cancel_at_period_end?: boolean;
     };
     stats: {
         totalCount: number;
@@ -126,9 +127,11 @@ const DashboardOverview: React.FC<DashboardOverviewProps> = ({
                                 {!isFreePlan && <ShieldCheck size={16} className="text-brand-400" />}
                             </div>
                             <div className={`text-xs ${isFreePlan ? 'text-gray-500 font-medium' : 'text-brand-400'}`}>
-                                {isFreePlan 
-                                    ? `Análises Restantes: ${Math.max(0, 5 - (stats.freeFoodUsed || 0))}/5` 
-                                    : 'Acesso Ilimitado VIP'
+                                {isFreePlan
+                                    ? `Análises Restantes: ${Math.max(0, 5 - (stats.freeFoodUsed || 0))}/5`
+                                    : (user.plan_cancel_at_period_end && user.plan_valid_until
+                                        ? `Cancelado · acesso até ${new Date(user.plan_valid_until).toLocaleDateString('pt-BR')}`
+                                        : 'Acesso Ilimitado VIP')
                                 }
                             </div>
                         </div>

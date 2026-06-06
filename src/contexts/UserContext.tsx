@@ -57,7 +57,8 @@ export const UserProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
                 is_admin: profile?.is_admin || false,
                 coach_personality: profile?.coach_personality || 'gordon_ramsay',
                 plan: plan,
-                plan_valid_until: entitlement?.valid_until
+                plan_valid_until: entitlement?.valid_until,
+                plan_cancel_at_period_end: entitlement?.cancel_at_period_end || false
             };
 
             setUser(userData);

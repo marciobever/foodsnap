@@ -12,6 +12,7 @@ interface DashboardProfileProps {
 
 export default function DashboardProfile({ user, refreshProfile }: DashboardProfileProps) {
   const isPaid = user?.plan === 'pro' || user?.plan === 'trial';
+  const isCanceled = isPaid && !!user?.plan_cancel_at_period_end;
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [isCanceling, setIsCanceling] = useState(false);
 
@@ -37,14 +38,11 @@ export default function DashboardProfile({ user, refreshProfile }: DashboardProf
       if (data.error) {
         toast.error('Erro ao cancelar: ' + data.error);
       } else {
-        toast.success('Assinatura cancelada com sucesso.');
+        toast.success(data.message || 'Assinatura cancelada com sucesso.');
         setShowCancelModal(false);
         if (refreshProfile) {
           await refreshProfile();
         }
-        setTimeout(() => {
-          window.location.href = '/';
-        }, 1500);
       }
     } catch (err) {
       toast.error('Erro ao cancelar assinatura.');
@@ -150,7 +148,10 @@ export default function DashboardProfile({ user, refreshProfile }: DashboardProf
                 </h3>
                 <p className="text-gray-500 text-sm">{isPaid ? 'Acesso total e ilimitado' : 'Limites gratuitos ativos'}</p>
               </div>
-              {isPaid && <span className="bg-brand-500 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">Ativo</span>}
+              {isPaid && (isCanceled
+                ? <span className="bg-amber-500 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">Cancelado</span>
+                : <span className="bg-brand-500 text-white text-xs font-bold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">Ativo</span>
+              )}
             </div>
 
             <div className="text-3xl font-black text-gray-900 relative z-10">
@@ -158,10 +159,17 @@ export default function DashboardProfile({ user, refreshProfile }: DashboardProf
             </div>
 
             {isPaid && user?.plan_valid_until && (
-              <div className="mt-3 mb-6 text-xs text-brand-700 bg-brand-100/50 rounded-lg p-3 border border-brand-200/30 font-medium relative z-10">
+              <div className={`mt-3 mb-6 text-xs rounded-lg p-3 border font-medium relative z-10 ${isCanceled ? 'text-amber-700 bg-amber-50 border-amber-200/50' : 'text-brand-700 bg-brand-100/50 border-brand-200/30'}`}>
                 {(() => {
                   const days = getDaysLeft(user.plan_valid_until);
                   const formattedDate = new Date(user.plan_valid_until).toLocaleDateString('pt-BR');
+                  if (isCanceled) {
+                    return (
+                      <p>
+                        Assinatura <span className="font-bold">cancelada</span>. Você mantém o acesso até <span className="font-bold">{formattedDate}</span> ({days} {days === 1 ? 'dia' : 'dias'}). Não haverá nova cobrança.
+                      </p>
+                    );
+                  }
                   if (user.plan === 'trial') {
                     return (
                       <p>
@@ -196,17 +204,25 @@ export default function DashboardProfile({ user, refreshProfile }: DashboardProf
             </ul>
 
             {isPaid ? (
-              <div className="relative z-10 space-y-3">
-                <div className="w-full py-2 px-3 rounded-lg border border-brand-200 bg-brand-50 text-brand-700 font-bold text-center text-xs">
-                  Plano Ativo — Acesso Liberado
+              isCanceled ? (
+                <div className="relative z-10">
+                  <div className="w-full py-2 px-3 rounded-lg border border-amber-200 bg-amber-50 text-amber-700 font-bold text-center text-xs">
+                    Cancelamento agendado{user?.plan_valid_until ? ` — acesso até ${new Date(user.plan_valid_until).toLocaleDateString('pt-BR')}` : ''}
+                  </div>
                 </div>
-                <button 
-                  onClick={() => setShowCancelModal(true)}
-                  className="w-full py-2.5 rounded-lg border border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-500 text-xs font-bold transition-colors uppercase tracking-wider"
-                >
-                  Cancelar Assinatura
-                </button>
-              </div>
+              ) : (
+                <div className="relative z-10 space-y-3">
+                  <div className="w-full py-2 px-3 rounded-lg border border-brand-200 bg-brand-50 text-brand-700 font-bold text-center text-xs">
+                    Plano Ativo — Acesso Liberado
+                  </div>
+                  <button
+                    onClick={() => setShowCancelModal(true)}
+                    className="w-full py-2.5 rounded-lg border border-gray-200 text-gray-500 hover:border-red-200 hover:text-red-500 text-xs font-bold transition-colors uppercase tracking-wider"
+                  >
+                    Cancelar Assinatura
+                  </button>
+                </div>
+              )
             ) : (
               <button 
                 onClick={handleCheckout}
@@ -230,7 +246,7 @@ export default function DashboardProfile({ user, refreshProfile }: DashboardProf
             </div>
             <h3 className="text-lg font-bold text-gray-900 text-center mb-2">Cancelar Assinatura?</h3>
             <p className="text-gray-500 text-sm text-center mb-6">
-              Você perderá o acesso ao FoodSnap imediatamente. Essa ação não pode ser desfeita.
+              Você mantém o acesso PRO até o fim do período já pago — não haverá nova cobrança.
             </p>
             <div className="flex gap-3">
               <button

@@ -512,6 +512,7 @@ Regras IMPORTANTES:
           .from("coach_assessments")
           .insert({
               user_id: profile.id,
+              source: "whatsapp",
               biotype: aiData.analysis?.somatotype || null,
               estimated_body_fat: aiData.analysis?.body_fat_percentage || 0,
               muscle_mass_level: aiData.analysis?.muscle_mass_level || null,

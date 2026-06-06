@@ -5,6 +5,7 @@ import { Providers } from './Providers';
 import { Toaster } from 'sonner';
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { PWARegister } from './pwa-register';
 
 const outfit = Outfit({ 
   subsets: ['latin'],
@@ -36,6 +37,16 @@ export const metadata: Metadata = {
     title: 'FoodSnap - Nutrição Inteligente',
     description: 'Chega de contar calorias manualmente. Deixe a IA fazer isso por você.',
   },
+  manifest: '/manifest.json',
+  icons: {
+    icon: '/icon-192x192.png',
+    apple: '/apple-touch-icon.png',
+  },
+  appleWebApp: {
+    capable: true,
+    title: 'FoodSnap',
+    statusBarStyle: 'default',
+  },
 };
 
 export const viewport: Viewport = {
@@ -55,6 +66,7 @@ export default function RootLayout({
           <Toaster position="bottom-center" richColors theme="light" />
           <Analytics />
           <SpeedInsights />
+          <PWARegister />
         </Providers>
       </body>
     </html>

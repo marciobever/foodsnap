@@ -17,6 +17,26 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Dispara e-mails transacionais via workflow do n8n (sem custo de provedor).
+// Configure N8N_EMAIL_WEBHOOK_URL no Vercel apontando para o webhook do n8n.
+const n8nEmailWebhook = (process.env.N8N_EMAIL_WEBHOOK_URL || '').trim();
+
+async function notifyEmail(payload: Record<string, any>) {
+  if (!n8nEmailWebhook) {
+    devWarn('N8N_EMAIL_WEBHOOK_URL não configurada — e-mail não enviado:', payload.event);
+    return;
+  }
+  try {
+    await fetch(n8nEmailWebhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error('Falha ao notificar n8n (e-mail):', err);
+  }
+}
+
 const isDev = process.env.NODE_ENV === 'development';
 
 function devLog(...args: any[]) {
@@ -112,7 +132,7 @@ export async function POST(req: Request) {
 
         const { data: profile, error: profileError } = await supabaseAdmin
           .from('profiles')
-          .select('id')
+          .select('id, email, full_name')
           .eq('stripe_customer_id', customerId)
           .single();
 
@@ -144,6 +164,20 @@ export async function POST(req: Request) {
             status: 'completed',
             plan_type: 'monthly',
             payment_method: 'credit_card',
+          });
+
+          // E-mail: 1ª compra (boas-vindas) vs renovação (recibo)
+          const billingReason = (invoice as any).billing_reason;
+          await notifyEmail({
+            event:
+              billingReason === 'subscription_create'
+                ? 'purchase_approved'
+                : 'payment_receipt',
+            email: profile.email || (invoice as any).customer_email || null,
+            name: profile.full_name || null,
+            amount: invoice.amount_paid / 100,
+            invoice_id: invoiceId,
+            plan: 'PRO',
           });
         }
 
@@ -180,6 +214,39 @@ export async function POST(req: Request) {
             cancel_at_period_end: false,
           })
           .eq('stripe_subscription_id', subscription.id);
+
+        // E-mail: assinatura cancelada
+        const { data: prof } = await supabaseAdmin
+          .from('profiles')
+          .select('email, full_name')
+          .eq('stripe_customer_id', subscription.customer as string)
+          .maybeSingle();
+
+        await notifyEmail({
+          event: 'subscription_canceled',
+          email: prof?.email || null,
+          name: prof?.full_name || null,
+        });
+
+        break;
+      }
+
+      case 'invoice.payment_failed': {
+        const invoice = event.data.object as Stripe.Invoice;
+        const customerId = invoice.customer as string;
+
+        const { data: prof } = await supabaseAdmin
+          .from('profiles')
+          .select('email, full_name')
+          .eq('stripe_customer_id', customerId)
+          .maybeSingle();
+
+        await notifyEmail({
+          event: 'payment_failed',
+          email: prof?.email || (invoice as any).customer_email || null,
+          name: prof?.full_name || null,
+          amount: invoice.amount_due / 100,
+        });
 
         break;
       }

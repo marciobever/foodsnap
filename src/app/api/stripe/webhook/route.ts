@@ -37,6 +37,12 @@ async function notifyEmail(payload: Record<string, any>) {
   }
 }
 
+// current_period_end pode vir na raiz (API antiga) ou em items.data[0] (API atual)
+function getPeriodEnd(sub: any): string | null {
+  const ts = sub?.current_period_end ?? sub?.items?.data?.[0]?.current_period_end;
+  return ts ? new Date(ts * 1000).toISOString() : null;
+}
+
 const isDev = process.env.NODE_ENV === 'development';
 
 function devLog(...args: any[]) {
@@ -98,9 +104,7 @@ export async function POST(req: Request) {
         const subscription = await stripe.subscriptions.retrieve(subscriptionId);
         const subscriptionAny = subscription as any;
 
-        const validUntil = subscriptionAny.current_period_end
-          ? new Date(subscriptionAny.current_period_end * 1000).toISOString()
-          : null;
+        const validUntil = getPeriodEnd(subscription);
 
         await supabaseAdmin.from('subscriptions').upsert(
           {
@@ -188,9 +192,7 @@ export async function POST(req: Request) {
         const subscription = event.data.object as Stripe.Subscription;
         const subscriptionAny = subscription as any;
 
-        const validUntil = subscriptionAny.current_period_end
-          ? new Date(subscriptionAny.current_period_end * 1000).toISOString()
-          : null;
+        const validUntil = getPeriodEnd(subscription);
 
         await supabaseAdmin
           .from('subscriptions')

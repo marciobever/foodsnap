@@ -15,6 +15,27 @@ const supabaseAdmin = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+const n8nEmailWebhook = (process.env.N8N_EMAIL_WEBHOOK_URL || '').trim();
+
+async function notifyEmail(payload: Record<string, any>) {
+  if (!n8nEmailWebhook) return;
+  try {
+    await fetch(n8nEmailWebhook, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error('Falha ao notificar n8n (e-mail de cancelamento):', err);
+  }
+}
+
+// current_period_end pode vir na raiz (API antiga) ou em items.data[0] (API atual)
+function getPeriodEnd(sub: any): string | null {
+  const ts = sub?.current_period_end ?? sub?.items?.data?.[0]?.current_period_end;
+  return ts ? new Date(ts * 1000).toISOString() : null;
+}
+
 export async function POST(req: Request) {
   try {
     const authHeader = req.headers.get('Authorization');
@@ -48,42 +69,68 @@ export async function POST(req: Request) {
       );
     }
 
-    // Caso normal: assinatura vinculada ao Stripe → agenda cancelamento no fim do ciclo.
+    // Dados do usuário para o e-mail de confirmação
+    const { data: profile } = await supabaseAdmin
+      .from('profiles')
+      .select('email, full_name')
+      .eq('id', user.id)
+      .maybeSingle();
+    const email = profile?.email || user.email || null;
+    const name = profile?.full_name || null;
+
+    // Caso normal: assinatura no Stripe → agenda cancelamento no fim do ciclo (mantém acesso até lá)
     if (subscription.stripe_subscription_id) {
       const stripeSubscription = await stripe.subscriptions.update(
         subscription.stripe_subscription_id,
-        {
-          cancel_at_period_end: true,
-        }
+        { cancel_at_period_end: true }
       );
+
+      const validUntil =
+        getPeriodEnd(stripeSubscription) || subscription.valid_until || null;
 
       await supabaseAdmin
         .from('subscriptions')
         .update({
-          status: stripeSubscription.status,
+          status: stripeSubscription.status, // segue 'active' até o fim do ciclo
           cancel_at_period_end: true,
+          valid_until: validUntil,
         })
         .eq('user_id', user.id);
 
+      await notifyEmail({
+        event: 'subscription_canceled',
+        email,
+        name,
+        valid_until: validUntil,
+      });
+
       return NextResponse.json({
         success: true,
+        valid_until: validUntil,
         message:
-          'Assinatura cancelada com sucesso. Você terá acesso até o fim do ciclo atual.',
+          'Assinatura cancelada. Você mantém o acesso PRO até o fim do período já pago.',
       });
     }
 
-    // Assinatura sem vínculo no Stripe (legado/manual) → cancela localmente.
+    // Assinatura sem vínculo no Stripe (legado/manual):
+    // não revoga na hora — mantém o acesso (status active) e marca para não renovar.
     await supabaseAdmin
       .from('subscriptions')
-      .update({
-        status: 'canceled',
-        cancel_at_period_end: false,
-      })
+      .update({ cancel_at_period_end: true })
       .eq('user_id', user.id);
+
+    await notifyEmail({
+      event: 'subscription_canceled',
+      email,
+      name,
+      valid_until: subscription.valid_until || null,
+    });
 
     return NextResponse.json({
       success: true,
-      message: 'Assinatura cancelada com sucesso.',
+      valid_until: subscription.valid_until || null,
+      message:
+        'Assinatura cancelada. Você mantém o acesso PRO até o fim do período já pago.',
     });
   } catch (error: any) {
     console.error('Cancel Subscription Error:', error);

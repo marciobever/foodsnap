@@ -415,6 +415,24 @@ Formato OBRIGATÓRIO:
         await sendWhatsAppMessage(replyMessage);
     }
 
+    // 6. Balanço do dia (acumulado) — feedback dentro da janela grátis
+    try {
+        const { data: todayRows } = await supabase
+            .from("food_analyses")
+            .select("total_calories, total_protein, calories, protein")
+            .eq("user_id", user.id)
+            .gte("created_at", startOfTodayBrazil.toISOString());
+        const n = (todayRows || []).length;
+        let dayKcal = 0, dayProt = 0;
+        for (const r of todayRows || []) {
+            dayKcal += Number((r as any).total_calories ?? (r as any).calories ?? 0);
+            dayProt += Number((r as any).total_protein ?? (r as any).protein ?? 0);
+        }
+        await sendWhatsAppMessage(`📊 *Hoje você já somou:*\n🔥 ${Math.round(dayKcal)} kcal · 🍗 ${Math.round(dayProt)}g de proteína\n_(${n}/8 análises do dia)_`);
+    } catch (balErr) {
+        console.error("Erro no balanço do dia:", balErr);
+    }
+
     return { success: true, analysis: foodData };
 
     } catch (error: any) {

@@ -1,23 +1,33 @@
 import * as wmill from "windmill-client";
 /**
  * Windmill Script 4: Send Interactive Menu
- * 
- * Se o usuário mandar texto no estado IDLE (e não for uma foto de comida),
- * nós respondemos com um menu interativo nativo do WhatsApp, sem textão.
- * 
- * INPUTS REQUERIDOS DO FLOW:
- * - remote_jid (string)
- * 
- * VARIABLES DO WINDMILL REQUERIDAS:
- * - META_ACCESS_TOKEN
- * - META_PHONE_NUMBER_ID
+ *
+ * Menu interativo do WhatsApp. Quando enviado (texto solto / "oi"), inclui
+ * no topo um resumo do dia (kcal e proteína já consumidos hoje), se o usuário
+ * tiver conta e refeições registradas.
  */
+
+function generatePhoneCandidates(raw: string): string[] {
+  if (!raw) return [];
+  const candidates: string[] = [];
+  const num = raw.replace(/\D/g, "");
+  if (!num) return candidates;
+  candidates.push(num);
+  const withoutDDI = num.startsWith("55") ? num.slice(2) : num;
+  if (withoutDDI !== num) candidates.push(withoutDDI);
+  if (!num.startsWith("55")) candidates.push("55" + num);
+  const ddd = withoutDDI.slice(0, 2);
+  const rest = withoutDDI.slice(2);
+  if (rest.length === 8) { const w = ddd + "9" + rest; candidates.push(w); candidates.push("55" + w); }
+  if (rest.length === 9 && rest.startsWith("9")) { const w = ddd + rest.slice(1); candidates.push(w); candidates.push("55" + w); }
+  return [...new Set(candidates)];
+}
 
 export async function main(remote_jid: string, interactive_id?: string) {
   const META_ACCESS_TOKEN = await wmill.getVariable("u/bevervansomarcio/META_ACCESS_TOKEN") as string;
   const META_PHONE_NUMBER_ID = await wmill.getVariable("u/bevervansomarcio/META_PHONE_NUMBER_ID") as string;
   const GRAPH_API_URL = "https://graph.facebook.com/v19.0";
-  
+
   const url = `${GRAPH_API_URL}/${META_PHONE_NUMBER_ID}/messages`;
 
   async function sendWhatsAppMessage(payload: any) {
@@ -33,7 +43,7 @@ export async function main(remote_jid: string, interactive_id?: string) {
   if (interactive_id) {
       let replyText = "";
       let newState = "";
-      
+
       if (interactive_id === "action_food") {
           replyText = "🥗 *Para iniciar, me envie uma foto do seu prato de comida!*";
           newState = "IDLE";
@@ -45,13 +55,12 @@ export async function main(remote_jid: string, interactive_id?: string) {
       }
 
       if (replyText) {
-          // Atualiza o state no banco se for action_coach ou action_food
           if (newState) {
               const { createClient } = require('@supabase/supabase-js');
               const SUPABASE_URL = await wmill.getVariable("u/bevervansomarcio/SUPABASE_URL");
               const SUPABASE_KEY = await wmill.getVariable("u/bevervansomarcio/SUPABASE_SERVICE_ROLE_KEY");
               const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-              
+
               await supabase
                   .from("whatsapp_sessions")
                   .update({ state: newState })
@@ -69,7 +78,39 @@ export async function main(remote_jid: string, interactive_id?: string) {
       }
   }
 
-  // 2. Se não for click (for um "Oi" ou texto solto), envia o Menu
+  // 2. Resumo do dia (se tiver conta + refeições hoje)
+  let resumoLinha = "";
+  try {
+      const { createClient } = require('@supabase/supabase-js');
+      const SUPABASE_URL = await wmill.getVariable("u/bevervansomarcio/SUPABASE_URL");
+      const SUPABASE_KEY = await wmill.getVariable("u/bevervansomarcio/SUPABASE_SERVICE_ROLE_KEY");
+      const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+      const cands = generatePhoneCandidates(remote_jid.replace(/\D/g, ""));
+      let uid: string | null = null;
+      for (const c of cands) {
+          const { data } = await supabase.from("profiles").select("id").eq("phone", c).maybeSingle();
+          if (data) { uid = data.id; break; }
+      }
+      if (uid) {
+          const startBR = new Date(Date.now() - 3 * 60 * 60 * 1000);
+          startBR.setUTCHours(3, 0, 0, 0);
+          const { data: rows } = await supabase
+              .from("food_analyses")
+              .select("total_calories, total_protein, calories, protein")
+              .eq("user_id", uid)
+              .gte("created_at", startBR.toISOString());
+          if ((rows || []).length) {
+              let k = 0, p = 0;
+              for (const r of rows) { k += Number((r as any).total_calories ?? (r as any).calories ?? 0); p += Number((r as any).total_protein ?? (r as any).protein ?? 0); }
+              resumoLinha = `📊 *Hoje:* ${Math.round(k)} kcal · ${Math.round(p)}g proteína\n\n`;
+          }
+      }
+  } catch (e) {
+      console.error("Resumo do menu falhou:", e);
+  }
+
+  // 3. Enviar o Menu
   const MENU_BANNER_URL = "https://mnhgpnqkwuqzpvfrwftp.supabase.co/storage/v1/object/public/consultas/assets/menu_banner.png";
 
   const menuPayload = {
@@ -80,7 +121,7 @@ export async function main(remote_jid: string, interactive_id?: string) {
       interactive: {
           type: "button",
           header: { type: "image", image: { link: MENU_BANNER_URL } },
-          body: { text: "Oi! 👋 Eu sou o *FoodSnap*, seu nutricionista e personal de bolso.\n\n🥗 Mande a *foto de um prato* que eu analiso as calorias e macros.\n🏋️ Ou crie sua *dieta e treino* personalizados.\n\nO que você quer fazer agora?" },
+          body: { text: resumoLinha + "Oi! 👋 Eu sou o *FoodSnap*, seu nutricionista e personal de bolso.\n\n🥗 Mande a *foto de um prato* que eu analiso as calorias e macros.\n🏋️ Ou crie sua *dieta e treino* personalizados.\n\nO que você quer fazer agora?" },
           footer: { text: "Toque em uma opção 👇" },
           action: {
               buttons: [

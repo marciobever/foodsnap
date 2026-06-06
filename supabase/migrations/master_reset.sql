@@ -29,7 +29,7 @@ CREATE TABLE public.profiles (
     email TEXT,
     is_admin BOOLEAN DEFAULT false,
     coach_personality TEXT DEFAULT 'gordon_ramsay',
-    asaas_customer_id TEXT
+    stripe_customer_id TEXT
 );
 
 -- Tabela: subscriptions (Substitui user_entitlements)
@@ -38,9 +38,11 @@ CREATE TABLE public.subscriptions (
     created_at TIMESTAMPTZ DEFAULT now(),
     updated_at TIMESTAMPTZ DEFAULT now(),
     plan TEXT DEFAULT 'free', -- 'free' ou 'pro'
-    status TEXT DEFAULT 'inactive', -- 'active', 'trialing', 'past_due', 'canceled'
+    status TEXT DEFAULT 'inactive', -- 'active', 'past_due', 'canceled'
     valid_until TIMESTAMPTZ,
-    asaas_subscription_id TEXT
+    stripe_subscription_id TEXT,
+    stripe_customer_id TEXT,
+    cancel_at_period_end BOOLEAN DEFAULT false
 );
 
 -- Tabela: whatsapp_sessions (Substitui whatsapp_conversations)

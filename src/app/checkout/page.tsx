@@ -424,7 +424,7 @@ export default function CheckoutPage() {
                     <div>
                       <p className="text-white text-sm font-bold">Pagamento 100% Seguro</p>
                       <p className="text-gray-400 text-xs mt-1 leading-relaxed">
-                        Você será redirecionado para a página segura de pagamentos do **Stripe** para concluir a assinatura.
+                        Você será redirecionado para a página segura de pagamentos do <strong>Stripe</strong> para concluir a assinatura.
                       </p>
                     </div>
                   </div>

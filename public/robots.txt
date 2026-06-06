@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /dashboard
 
-Sitemap: https://foodsnap.ai/sitemap.xml
+Sitemap: https://foodsnap.com.br/sitemap.xml

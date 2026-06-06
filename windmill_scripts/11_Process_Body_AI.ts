@@ -19,7 +19,7 @@ function buildCoachPdfHtml(plan: any): string {
         <span>${opt}</span>
       </li>
     `).join("");
-    
+
     return `
       <div style="page-break-inside: avoid; break-inside: avoid;" class="mb-2.5 p-3.5 bg-white border border-gray-100 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
         <div class="flex justify-between items-center mb-2 pb-1 border-b border-gray-50">
@@ -48,7 +48,7 @@ function buildCoachPdfHtml(plan: any): string {
         <td class="py-1.5 pr-2 text-right text-slate-500 text-[9.5px] italic font-light max-w-[130px] truncate" title="${ex.technique || ''}">${ex.technique || "-"}</td>
       </tr>
     `).join("");
-    
+
     return `
       <div style="page-break-inside: avoid; break-inside: avoid;" class="mb-3 bg-white border border-slate-150 rounded-xl shadow-sm overflow-hidden">
         <div class="bg-gradient-to-r from-slate-800 to-slate-900 px-3 py-2 flex justify-between items-center">
@@ -122,7 +122,7 @@ function buildCoachPdfHtml(plan: any): string {
   <!-- PAGE 1: DIETA -->
   <div class="pdf-page bg-white shadow-2xl mx-auto">
     <div class="page-bg-deco"></div>
-    
+
     <!-- Top Header Bar -->
     <div class="relative z-10 flex justify-between items-center border-b-2 border-slate-100 pb-3 mb-3">
       <div class="flex items-center gap-3">
@@ -175,7 +175,7 @@ function buildCoachPdfHtml(plan: any): string {
           ${mealsHtml}
         </div>
       </div>
-      
+
       <!-- Supplements Column -->
       <div class="col-span-2 flex flex-col min-h-0 overflow-hidden bg-slate-900 rounded-2xl p-4 border border-slate-800 shadow-inner">
         <div class="flex items-center gap-2 mb-3 pb-2 border-b border-slate-800">
@@ -389,7 +389,7 @@ Formato de Resposta (Siga estritamente esta estrutura):
        { "name": "Whey Protein", "dosage": "30g se necessário", "reason": "Praticidade proteica" }
     ],
     "meal_plan_example": [
-      { 
+      {
         "name": "Café da Manhã",
         "time_range": "07:00 - 08:00",
         "options": [
@@ -398,8 +398,8 @@ Formato de Resposta (Siga estritamente esta estrutura):
         ],
         "substitution_suggestion": "Substituir ovos por Whey se estiver com pressa."
       },
-      { 
-        "name": "Almoço", 
+      {
+        "name": "Almoço",
         "time_range": "12:00 - 13:00",
         "options": [
              "Opção 1: 150g Frango Grelhado + 120g Arroz Branco + Salada à vontade",
@@ -448,10 +448,10 @@ Regras IMPORTANTES:
 
   try {
       const openaiUrl = "https://api.openai.com/v1/chat/completions";
-      
+
       const aiResponse = await fetch(openaiUrl, {
           method: "POST",
-          headers: { 
+          headers: {
               "Content-Type": "application/json",
               "Authorization": `Bearer ${OPENAI_API_KEY}`
           },
@@ -465,12 +465,12 @@ Regras IMPORTANTES:
                   {
                       role: "user",
                       content: [
-                          { 
-                              type: "image_url", 
-                              image_url: { 
+                          {
+                              type: "image_url",
+                              image_url: {
                                   url: `data:${mimeType};base64,${base64Img}`,
-                                  detail: "high" 
-                              } 
+                                  detail: "high"
+                              }
                           }
                       ]
                   }
@@ -482,7 +482,7 @@ Regras IMPORTANTES:
 
       const aiDataRaw = await aiResponse.json();
       let responseText = aiDataRaw.choices?.[0]?.message?.content;
-      
+
       if (!responseText) throw new Error("Sem resposta válida da OpenAI.");
 
       const aiData = JSON.parse(responseText);
@@ -528,7 +528,7 @@ Regras IMPORTANTES:
       try {
           const pdfFileName = `FoodSnap_Titan_${Date.now()}`;
           const pdfHtml = buildCoachPdfHtml(aiData);
-          
+
           const pdfResponse = await fetch("https://n8n.seureview.com.br/webhook/pdf-coach", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -539,9 +539,9 @@ Regras IMPORTANTES:
               const pdfBlob = await pdfResponse.arrayBuffer();
               const storagePath = `${profile.id}/${pdfFileName}.pdf`;
               await supabase.storage.from("coach-pdfs").upload(storagePath, new Uint8Array(pdfBlob), { contentType: "application/pdf" });
-              
+
               const { data: urlData } = await supabase.storage.from("coach-pdfs").createSignedUrl(storagePath, 3600);
-              
+
               if (urlData?.signedUrl) {
                   await fetch(`${GRAPH_API}/${META_PHONE_ID}/messages`, {
                       method: "POST",
@@ -566,98 +566,20 @@ Regras IMPORTANTES:
           .update({ state: "IDLE" })
           .eq("phone_number", sender_number);
 
-      // 7. Gerar imagem do card de avaliação do corpo
-      let bodyCardUrl = null;
-      try {
-          console.log("Gerando card visual da avaliação física...");
-          const bodyHtml = buildBodyCardHtml(aiData, coach_personality);
-          const estimatedHeight = estimateBodyCardHeight(aiData);
-          
-          const renderRes = await fetch("https://puppeteer.foodsnap.com.br/api/render", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                  html: bodyHtml,
-                  width: 740,
-                  height: estimatedHeight
-              })
-          });
-
-          if (renderRes.ok) {
-              const cardBuffer = Buffer.from(await renderRes.arrayBuffer());
-              const cardFileName = `body_card_${Date.now()}.png`;
-              const cardStoragePath = `${profile.id}/${cardFileName}`;
-              
-              console.log(`Enviando card visual da avaliação para Supabase Storage: consultas/${cardStoragePath}...`);
-              const { error: cardUploadErr } = await supabase.storage
-                  .from('consultas')
-                  .upload(cardStoragePath, cardBuffer, {
-                      contentType: 'image/png',
-                      upsert: true
-                  });
-
-              if (!cardUploadErr) {
-                  const { data: cardUrlData } = supabase.storage
-                      .from('consultas')
-                      .getPublicUrl(cardStoragePath);
-                  bodyCardUrl = cardUrlData?.publicUrl || null;
-                  console.log("Card visual do corpo salvo com sucesso:", bodyCardUrl);
-              } else {
-                  console.error("Erro ao subir card do corpo no storage:", cardUploadErr);
-              }
-          } else {
-              console.error("Erro na chamada de render do card do corpo:", renderRes.status, await renderRes.text());
-          }
-      } catch (renderErr) {
-          console.error("Falha ao gerar card visual do corpo:", renderErr);
-      }
-
-      // Salvar a URL do card gerado no JSON estruturado para histórico
-      if (bodyCardUrl && dbInsert?.id) {
-          try {
-              const richAiStructured = {
-                  ...aiData,
-                  card_image_url: bodyCardUrl
-              };
-              await supabase
-                  .from("coach_assessments")
-                  .update({ ai_structured: richAiStructured })
-                  .eq("id", dbInsert.id);
-          } catch (updateErr) {
-              console.error("Erro ao salvar card_image_url no coach_assessments:", updateErr);
-          }
-      }
-
-      // 8. Enviar o resultado pro WhatsApp
+      // 7. Enviar o resultado pro WhatsApp
       const successText = `✅ *Sua Avaliação Física está pronta!*\n\n🧬 *Biótipo:* ${aiData.analysis?.somatotype || ""}\n⚖️ *Gordura Estimada:* ~${aiData.analysis?.body_fat_percentage || ""}%\n💪 *Massa Muscular:* ${aiData.analysis?.muscle_mass_level || ""}\n\n🎯 *Foco:* ${aiData.workout?.focus || ""}\n\nSeu plano completo de Dieta e Treino já está disponível no painel. Você pode acessar e baixar o PDF por lá!\n👉 https://foodsnap.com.br`;
 
-      if (bodyCardUrl) {
-          await fetch(`${GRAPH_API}/${META_PHONE_ID}/messages`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${META_TOKEN}` },
-              body: JSON.stringify({
-                  messaging_product: "whatsapp",
-                  recipient_type: "individual",
-                  to: remote_jid,
-                  type: "image",
-                  image: {
-                      link: bodyCardUrl
-                  }
-              })
-          });
-      } else {
-          await fetch(`${GRAPH_API}/${META_PHONE_ID}/messages`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Authorization: `Bearer ${META_TOKEN}` },
-              body: JSON.stringify({
-                  messaging_product: "whatsapp",
-                  recipient_type: "individual",
-                  to: remote_jid,
-                  type: "text",
-                  text: { body: successText }
-              })
-          });
-      }
+      await fetch(`${GRAPH_API}/${META_PHONE_ID}/messages`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${META_TOKEN}` },
+          body: JSON.stringify({
+              messaging_product: "whatsapp",
+              recipient_type: "individual",
+              to: remote_jid,
+              type: "text",
+              text: { body: successText }
+          })
+      });
 
       return { success: true, biotype: aiData.analysis?.somatotype || "" };
 
@@ -665,431 +587,4 @@ Regras IMPORTANTES:
       console.error("Erro na OpenAI ou Supabase:", error);
       return { success: false, error: error.message };
   }
-}
-
-function estimateBodyCardHeight(aiData: any): number {
-    let height = 620; // Base height
-
-    const quote = aiData.motivation_quote || "Disciplina é a ponte entre metas e conquistas.";
-    // Add space for motivation quote text (approx 65 characters per line)
-    const lines = Math.ceil(quote.length / 65);
-    height += 90 + (lines * 18);
-
-    return Math.max(500, Math.min(1300, Math.round(height)));
-}
-
-function buildBodyCardHtml(aiData: any, coach_personality: string): string {
-    const analysis = aiData.analysis || {};
-    const workout = aiData.workout || {};
-    const motivation_quote = aiData.motivation_quote || "Disciplina é a ponte entre metas e conquistas.";
-
-    const biotype = analysis.somatotype || 'Mesomorfo';
-    const body_fat = analysis.body_fat_percentage || 'N/A';
-    const muscle_mass = analysis.muscle_mass_level || 'Média';
-    const focus = workout.focus || 'Hipertrofia';
-
-    let coachName = 'Chef Gordon';
-    const coachPers = (coach_personality || "gordon_ramsay").toLowerCase();
-    if (coachPers.includes('vovo') || coachPers.includes('grandma') || coachPers.includes('carinhosa')) {
-        coachName = 'Vovó Carinhosa';
-    } else if (coachPers.includes('cientifico') || coachPers.includes('science') || coachPers.includes('dr')) {
-        coachName = 'Dr. Científico Frio';
-    } else if (coachPers.includes('militar') || coachPers.includes('military') || coachPers.includes('sargento')) {
-        coachName = 'Sargento Militar';
-    } else {
-        coachName = 'Chef Gordon (Cheff Titã)';
-    }
-
-    const dnaIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m8 8-.5.5M12 6l-1 1M16 4l-1.5 1.5M16 10l-1.5-1.5M12 12l-1-1M8 14l-.5-.5M6 18l1.5-1.5M10 20l1-1M14 22l1.5-1.5M8 6C5 9 5 15 8 18m8-12c3 3 3 9 0 12"/></svg>`;
-    const scaleIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6M12 3v9M12 12a3 3 0 1 0 0 6 3 3 0 0 0 0-6zM3 7h18M5 7l2 10h10l2-10"/></svg>`;
-    const muscleIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5h11M6.5 17.5h11M12 2v20M6.5 6.5c-1 0-2.5.5-2.5 2.5v6c0 2 1.5 2.5 2.5 2.5M17.5 6.5c1 0 2.5.5 2.5 2.5v6c0 2-1.5 2.5-2.5 2.5"/></svg>`;
-    const targetIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
-    const dietIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 3.58 1 9.2a7 7 0 0 1-13.9 8.8zM19 2L9.8 11.2"/></svg>`;
-    const workoutIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`;
-    const coachIcon = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>`;
-
-    return `
-    <!DOCTYPE html>
-    <html lang="pt-BR">
-    <head>
-        <meta charset="UTF-8">
-        <style>
-            @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap');
-            
-            * {
-                box-sizing: border-box;
-                margin: 0;
-                padding: 0;
-            }
-            
-            body {
-                background: transparent;
-                font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                color: #0f172a;
-                -webkit-font-smoothing: antialiased;
-            }
-            
-            .capture-wrapper {
-                width: 740px;
-                padding: 20px;
-                background: transparent;
-            }
-            
-            .card {
-                background: #ffffff;
-                border-radius: 24px;
-                border: 1px solid #e2e8f0;
-                box-shadow: 0 10px 30px -5px rgba(15, 23, 42, 0.08), 0 8px 16px -6px rgba(15, 23, 42, 0.04);
-                overflow: hidden;
-                padding: 32px;
-            }
-            
-            /* Header */
-            .header {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                margin-bottom: 24px;
-                padding-bottom: 20px;
-                border-bottom: 1px solid #f1f5f9;
-            }
-            
-            .brand {
-                font-size: 26px;
-                font-weight: 800;
-                letter-spacing: -0.03em;
-                color: #0f172a;
-                display: flex;
-                align-items: center;
-            }
-            
-            .brand-dot {
-                color: #8b5cf6;
-            }
-            
-            .status-badge {
-                font-size: 11px;
-                font-weight: 700;
-                padding: 6px 14px;
-                border-radius: 9999px;
-                background-color: #f5f3ff;
-                color: #6d28d9;
-                border: 1px solid #ddd6fe;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            
-            .status-dot {
-                width: 6px;
-                height: 6px;
-                background-color: #10b981;
-                border-radius: 50%;
-            }
-            
-            /* Title Section */
-            .title-section {
-                margin-bottom: 24px;
-            }
-            
-            .subtitle {
-                font-size: 11px;
-                font-weight: 800;
-                text-transform: uppercase;
-                letter-spacing: 0.08em;
-                color: #8b5cf6;
-                margin-bottom: 6px;
-            }
-            
-            .title {
-                font-size: 26px;
-                font-weight: 800;
-                color: #0f172a;
-                letter-spacing: -0.02em;
-            }
-            
-            /* Metrics Grid */
-            .metrics-grid {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 16px;
-                margin-bottom: 24px;
-            }
-            
-            .metric-box {
-                background-color: #f8fafc;
-                border: 1px solid #f1f5f9;
-                border-radius: 16px;
-                padding: 20px 12px;
-                text-align: center;
-            }
-            
-            .metric-icon {
-                width: 36px;
-                height: 36px;
-                background-color: #f5f3ff;
-                border-radius: 10px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #8b5cf6;
-                margin: 0 auto 12px auto;
-            }
-            
-            .metric-icon svg {
-                width: 20px;
-                height: 20px;
-            }
-            
-            .metric-lbl {
-                font-size: 10px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                color: #64748b;
-                margin-bottom: 4px;
-            }
-            
-            .metric-val {
-                font-size: 18px;
-                font-weight: 800;
-                color: #0f172a;
-                letter-spacing: -0.01em;
-            }
-            
-            /* Focus Box */
-            .focus-box {
-                background-color: #f5f3ff;
-                border: 1px solid #ede9fe;
-                border-radius: 16px;
-                padding: 18px;
-                display: flex;
-                align-items: center;
-                gap: 16px;
-                margin-bottom: 24px;
-            }
-            
-            .focus-icon {
-                width: 44px;
-                height: 44px;
-                background-color: #8b5cf6;
-                border-radius: 12px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #ffffff;
-                flex-shrink: 0;
-            }
-            
-            .focus-icon svg {
-                width: 22px;
-                height: 22px;
-            }
-            
-            .focus-content {
-                flex: 1;
-            }
-            
-            .focus-title {
-                font-size: 11px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                color: #7c3aed;
-                margin-bottom: 2px;
-            }
-            
-            .focus-val {
-                font-size: 18px;
-                font-weight: 800;
-                color: #4c1d95;
-            }
-            
-            /* Plan Row */
-            .plan-row {
-                display: grid;
-                grid-template-columns: 1fr 1fr;
-                gap: 16px;
-                margin-bottom: 24px;
-            }
-            
-            .plan-box {
-                background-color: #f8fafc;
-                border: 1px solid #f1f5f9;
-                border-radius: 16px;
-                padding: 16px;
-            }
-            
-            .plan-box-title {
-                font-size: 12px;
-                font-weight: 700;
-                color: #0f172a;
-                margin-bottom: 6px;
-                display: flex;
-                align-items: center;
-                gap: 6px;
-            }
-            
-            .plan-box-title svg {
-                width: 16px;
-                height: 16px;
-                color: #8b5cf6;
-            }
-            
-            .plan-box-desc {
-                font-size: 11px;
-                color: #64748b;
-                line-height: 1.4;
-            }
-            
-            /* Coach Container */
-            .coach-container {
-                background-color: #0f172a;
-                border-radius: 16px;
-                padding: 20px;
-                color: #ffffff;
-            }
-            
-            .coach-header {
-                display: flex;
-                gap: 12px;
-                align-items: center;
-                margin-bottom: 12px;
-            }
-            
-            .coach-avatar {
-                width: 36px;
-                height: 36px;
-                border-radius: 10px;
-                background-color: #1e293b;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: #8b5cf6;
-                flex-shrink: 0;
-            }
-            
-            .coach-avatar svg {
-                width: 20px;
-                height: 20px;
-            }
-            
-            .coach-meta {
-                flex: 1;
-            }
-            
-            .coach-title {
-                font-size: 9px;
-                font-weight: 700;
-                text-transform: uppercase;
-                letter-spacing: 0.05em;
-                color: #94a3b8;
-            }
-            
-            .coach-name {
-                font-size: 13px;
-                font-weight: 700;
-                color: #ffffff;
-            }
-            
-            .coach-bubble {
-                font-size: 12px;
-                font-style: italic;
-                line-height: 1.5;
-                color: #cbd5e1;
-                padding: 12px;
-                background-color: #1e293b;
-                border-radius: 8px;
-                border-left: 3px solid #8b5cf6;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="capture-wrapper" id="capture">
-            <div class="card">
-                <div class="header">
-                    <div class="brand">
-                        <span>FoodSnap</span><span class="brand-dot">.ai</span>
-                    </div>
-                    <div class="status-badge">
-                        <div class="status-dot"></div>
-                        Avaliação Concluída
-                    </div>
-                </div>
-                
-                <div class="title-section">
-                    <div class="subtitle">AI Personal Trainer</div>
-                    <h2 class="title">Seu Protocolo Titan</h2>
-                </div>
-                
-                <div class="metrics-grid">
-                    <div class="metric-box">
-                        <div class="metric-icon">${dnaIcon}</div>
-                        <div class="metric-lbl">Biótipo</div>
-                        <div class="metric-val">${biotype}</div>
-                    </div>
-                    <div class="metric-box">
-                        <div class="metric-icon">${scaleIcon}</div>
-                        <div class="metric-lbl">Gordura Estimada</div>
-                        <div class="metric-val">~${body_fat}%</div>
-                    </div>
-                    <div class="metric-box">
-                        <div class="metric-icon">${muscleIcon}</div>
-                        <div class="metric-lbl">Massa Muscular</div>
-                        <div class="metric-val">${muscle_mass}</div>
-                    </div>
-                </div>
-                
-                <div class="focus-box">
-                    <div class="focus-icon">
-                        ${targetIcon}
-                    </div>
-                    <div class="focus-content">
-                        <div class="focus-title">Foco de Ação</div>
-                        <div class="focus-val">${focus}</div>
-                    </div>
-                </div>
-                
-                <div class="plan-row">
-                    <div class="plan-box">
-                        <div class="plan-box-title">
-                            ${dietIcon}
-                            <span>Dieta Nutricional</span>
-                        </div>
-                        <div class="plan-box-desc">
-                            Seu plano alimentar científico completo foi anexado no PDF abaixo.
-                        </div>
-                    </div>
-                    <div class="plan-box">
-                        <div class="plan-box-title">
-                            ${workoutIcon}
-                            <span>Divisão de Treino</span>
-                        </div>
-                        <div class="plan-box-desc">
-                            A planilha de exercícios montada para o seu biótipo foi anexada no PDF abaixo.
-                        </div>
-                    </div>
-                </div>
-                
-                ${motivation_quote ? `
-                <div class="coach-container">
-                    <div class="coach-header">
-                        <div class="coach-avatar">
-                            ${coachIcon}
-                        </div>
-                        <div class="coach-meta">
-                            <div class="coach-title">Motivação do Coach</div>
-                            <div class="coach-name">${coachName}</div>
-                        </div>
-                    </div>
-                    <div class="coach-bubble">
-                        "${motivation_quote}"
-                    </div>
-                </div>
-                ` : ''}
-            </div>
-        </div>
-    </body>
-    </html>
-    `;
 }

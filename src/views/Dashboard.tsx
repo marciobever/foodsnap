@@ -191,6 +191,7 @@ export default function Dashboard({
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         t={t}
+        logout={onLogout}
       />
     </div>
   );

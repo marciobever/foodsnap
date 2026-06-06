@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 /**
  * Windmill Script 8: Register Ghost User (WhatsApp First)
- * 
+ *
  * Este script roda quando o state = "AWAITING_NAME".
  * Ele pega o texto digitado (nome) e cria uma conta fantasma.
  */
@@ -73,8 +73,8 @@ export async function main(
   }).eq("phone_number", sender_number);
 
   // 4. Enviar mensagem de Boas Vindas
-  const welcomeText = `Prontinho, ${fullName}! 🎉\n\nSua conta foi criada.\n\nMas para você continuar testando o seu Personal e Nutri de Bolso, você precisa *iniciar o seu teste grátis (7 Dias)* no nosso painel.\n\n👉 Acesse: https://foodsnap.com.br/dashboard e inicie seu Trial agora mesmo!`;
-  
+  const welcomeText = `Prontinho, ${fullName}! 🎉\n\nSua conta foi criada.\n\nMas para você continuar usando o seu Personal e Nutri de bolso, você precisa *ativar seu plano por apenas R$ 5,00 no primeiro mês* no nosso painel.\n\n👉 Acesse: https://foodsnap.com.br/dashboard e ative seu plano agora mesmo!`;
+
   await sendWhatsAppMessage(welcomeText);
 
   return { success: true, user_id: userId };

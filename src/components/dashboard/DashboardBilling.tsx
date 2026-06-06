@@ -49,7 +49,7 @@ export default function DashboardBilling({ user }: DashboardBillingProps) {
           </div>
           <div>
             <h2 className="text-lg font-bold text-gray-900">Histórico de Transações</h2>
-            <p className="text-gray-500 text-sm">Faturas processadas pela operadora Asaas.</p>
+            <p className="text-gray-500 text-sm">Faturas processadas com segurança pelo Stripe.</p>
           </div>
         </div>
 

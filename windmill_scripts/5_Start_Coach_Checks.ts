@@ -52,7 +52,7 @@ export async function main(remote_jid: string, user_id: string, sender_number: s
       const isPaid = sub && sub.status === "active";
 
       if (!isPaid) {
-          // Send CTA Message (Asaas Checkout)
+          // Send CTA Message (Stripe Checkout via dashboard)
           await fetch(`${GRAPH_API_URL}/${META_PHONE_NUMBER_ID}/messages`, {
               method: "POST",
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${META_ACCESS_TOKEN}` },

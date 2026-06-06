@@ -70,6 +70,8 @@ export async function main(remote_jid: string, interactive_id?: string) {
   }
 
   // 2. Se não for click (for um "Oi" ou texto solto), envia o Menu
+  const MENU_BANNER_URL = "https://mnhgpnqkwuqzpvfrwftp.supabase.co/storage/v1/object/public/consultas/assets/menu_banner.png";
+
   const menuPayload = {
       messaging_product: "whatsapp",
       recipient_type: "individual",
@@ -77,14 +79,14 @@ export async function main(remote_jid: string, interactive_id?: string) {
       type: "interactive",
       interactive: {
           type: "button",
-          header: { type: "text", text: "foodsnap.com.br 🥑" },
-          body: { text: "Oi! Tudo bem? 👋\n\nComo posso ajudar você a atingir seu objetivo hoje?" },
-          footer: { text: "Toque em uma das opções abaixo:" },
+          header: { type: "image", image: { link: MENU_BANNER_URL } },
+          body: { text: "Oi! 👋 Eu sou o *FoodSnap*, seu nutricionista e personal de bolso.\n\n🥗 Mande a *foto de um prato* que eu analiso as calorias e macros.\n🏋️ Ou crie sua *dieta e treino* personalizados.\n\nO que você quer fazer agora?" },
+          footer: { text: "Toque em uma opção 👇" },
           action: {
               buttons: [
                   { type: "reply", reply: { id: "action_food", title: "🥗 Avaliar Prato" } },
-                  { type: "reply", reply: { id: "action_coach", title: "🏋️ Criar Dieta/Treino" } },
-                  { type: "reply", reply: { id: "action_dashboard", title: "📊 Ver Dashboard" } }
+                  { type: "reply", reply: { id: "action_coach", title: "🏋️ Dieta e Treino" } },
+                  { type: "reply", reply: { id: "action_dashboard", title: "📊 Meu Painel" } }
               ]
           }
       }

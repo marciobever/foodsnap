@@ -2,8 +2,8 @@ import * as wmill from "windmill-client";
 /**
  * Windmill Script 4: Send Interactive Menu
  *
- * Menu interativo do WhatsApp. Quando enviado (texto solto / "oi"), inclui
- * no topo um resumo do dia (kcal e proteína já consumidos hoje), se o usuário
+ * Menu interativo do WhatsApp. O corpo é a saudação limpa; o resumo do dia
+ * (kcal/proteína de hoje) aparece de forma discreta no RODAPÉ, se o usuário
  * tiver conta e refeições registradas.
  */
 
@@ -78,8 +78,8 @@ export async function main(remote_jid: string, interactive_id?: string) {
       }
   }
 
-  // 2. Resumo do dia (se tiver conta + refeições hoje)
-  let resumoLinha = "";
+  // 2. Resumo do dia (rodapé discreto, se tiver conta + refeições hoje)
+  let resumoFooter = "";
   try {
       const { createClient } = require('@supabase/supabase-js');
       const SUPABASE_URL = await wmill.getVariable("u/bevervansomarcio/SUPABASE_URL");
@@ -103,7 +103,7 @@ export async function main(remote_jid: string, interactive_id?: string) {
           if ((rows || []).length) {
               let k = 0, p = 0;
               for (const r of rows) { k += Number((r as any).total_calories ?? (r as any).calories ?? 0); p += Number((r as any).total_protein ?? (r as any).protein ?? 0); }
-              resumoLinha = `📊 *Hoje:* ${Math.round(k)} kcal · ${Math.round(p)}g proteína\n\n`;
+              resumoFooter = `📊 Hoje: ${Math.round(k)} kcal · ${Math.round(p)}g proteína`;
           }
       }
   } catch (e) {
@@ -121,8 +121,8 @@ export async function main(remote_jid: string, interactive_id?: string) {
       interactive: {
           type: "button",
           header: { type: "image", image: { link: MENU_BANNER_URL } },
-          body: { text: resumoLinha + "Oi! 👋 Eu sou o *FoodSnap*, seu nutricionista e personal de bolso.\n\n🥗 Mande a *foto de um prato* que eu analiso as calorias e macros.\n🏋️ Ou crie sua *dieta e treino* personalizados.\n\nO que você quer fazer agora?" },
-          footer: { text: "Toque em uma opção 👇" },
+          body: { text: "Oi! 👋 Eu sou o *FoodSnap*, seu nutricionista e personal de bolso.\n\n🥗 Mande a *foto de um prato* que eu analiso as calorias e macros.\n🏋️ Ou crie sua *dieta e treino* personalizados.\n\nO que você quer fazer agora?" },
+          footer: { text: resumoFooter || "Toque em uma opção 👇" },
           action: {
               buttons: [
                   { type: "reply", reply: { id: "action_food", title: "🥗 Avaliar Prato" } },

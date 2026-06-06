@@ -7,7 +7,7 @@ export default function Loading() {
           <div className="w-6 h-6 bg-brand-500 rounded-full animate-pulse-soft"></div>
         </div>
       </div>
-      <p className="mt-4 text-brand-900 font-bold tracking-widest uppercase text-xs animate-pulse">FoodSnap.ai</p>
+      <p className="mt-4 text-brand-900 font-bold tracking-widest uppercase text-xs animate-pulse">FoodSnap</p>
     </div>
   );
 }

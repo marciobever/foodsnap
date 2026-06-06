@@ -311,7 +311,7 @@ const dictionary: Record<Language, Translations> = {
       tag: 'NOVA IA GERATIVA 2.0',
       titleStart: 'Transforme seu corpo',
       titleHighlight: 'com apenas uma foto.',
-      subtitle: 'O FoodSnap.ai elimina a necessidade de pesar comida. Tire uma foto e nossa Inteligência Artificial calcula calorias, macros e te dá dicas em tempo real para atingir seu peso ideal.',
+      subtitle: 'O FoodSnap elimina a necessidade de pesar comida. Tire uma foto e nossa Inteligência Artificial calcula calorias, macros e te dá dicas em tempo real para atingir seu peso ideal.',
       ctaUpload: 'Testar IA Agora',
       ctaPlans: 'Ver Preços',
       stats: '25k+ refeições otimizadas',
@@ -321,7 +321,7 @@ const dictionary: Record<Language, Translations> = {
       demoAdvice: 'Dica FoodSnap:',
       demoAdviceText: 'Ótima proteína! Reduza o arroz pela metade no jantar para acelerar a queima de gordura.',
       demoModalTitle: 'Experimente a Mágica',
-      demoModalDesc: 'Envie uma foto da sua refeição. O FoodSnap.ai identifica ingredientes e calcula tudo instantaneamente.',
+      demoModalDesc: 'Envie uma foto da sua refeição. O FoodSnap identifica ingredientes e calcula tudo instantaneamente.',
       demoModalBtn: 'Enviar Foto',
       demoProcessing: 'FoodSnap analisando...'
     },
@@ -354,7 +354,7 @@ const dictionary: Record<Language, Translations> = {
     },
     testimonials: {
       title: 'Resultados Reais',
-      subtitle: 'Milhares de pessoas já transformaram sua relação com a comida usando o FoodSnap.ai.',
+      subtitle: 'Milhares de pessoas já transformaram sua relação com a comida usando o FoodSnap.',
       r1Content: 'Eu desisti de 5 dietas porque tinha preguiça de anotar tudo. Com o FoodSnap, só tiro foto e pronto. Perdi 8kg em 2 meses!',
       r1Role: 'Advogado',
       r2Content: 'Como nutricionista, recomendo aos pacientes. A adesão ao plano alimentar triplicou porque ficou divertido acompanhar.',
@@ -426,14 +426,14 @@ const dictionary: Record<Language, Translations> = {
     },
     faqPage: {
       title: 'Central de Ajuda',
-      subtitle: 'Encontre respostas para suas dúvidas sobre o FoodSnap.ai',
+      subtitle: 'Encontre respostas para suas dúvidas sobre o FoodSnap',
       searchPlaceholder: 'Busque sua dúvida (ex: cancelamento, whatsapp...)',
       backHome: 'Voltar para Home',
       categories: {
         general: {
           title: 'Geral',
           items: [
-            { q: 'O que é o FoodSnap.ai?', a: 'O FoodSnap.ai é um serviço de nutrição inteligente que usa inteligência artificial para analisar fotos de suas refeições, calcular calorias e macros, e fornecer feedback em tempo real via WhatsApp.' },
+            { q: 'O que é o FoodSnap?', a: 'O FoodSnap é um serviço de nutrição inteligente que usa inteligência artificial para analisar fotos de suas refeições, calcular calorias e macros, e fornecer feedback em tempo real via WhatsApp.' },
             { q: 'Como funciona a análise?', a: 'Basta enviar uma foto do seu prato para nosso número no WhatsApp. Nossa IA identifica os alimentos, estima as porções e retorna um relatório nutricional completo em segundos.' },
             { q: 'Preciso de um app?', a: 'Não. Tudo funciona dentro do WhatsApp. Você também tem acesso a um painel web para ver seu histórico completo e gráficos de evolução.' }
           ]
@@ -774,14 +774,14 @@ const dictionary: Record<Language, Translations> = {
     },
     faqPage: {
       title: 'Help Center',
-      subtitle: 'Find answers to your questions about FoodSnap.ai',
+      subtitle: 'Find answers to your questions about FoodSnap',
       searchPlaceholder: 'Search your question (ex: cancel, whatsapp...)',
       backHome: 'Back to Home',
       categories: {
         general: {
           title: 'General',
           items: [
-            { q: 'What is FoodSnap.ai?', a: 'FoodSnap.ai is an intelligent nutrition service that uses AI to analyze photos of your meals, calculate calories/macros, and provide real-time feedback via WhatsApp.' },
+            { q: 'What is FoodSnap?', a: 'FoodSnap is an intelligent nutrition service that uses AI to analyze photos of your meals, calculate calories/macros, and provide real-time feedback via WhatsApp.' },
             { q: 'How does analysis work?', a: 'Just send a photo of your dish to our WhatsApp number. Our AI identifies foods, estimates portions, and returns a full nutritional report in seconds.' },
             { q: 'Do I need an app?', a: 'No. Everything works within WhatsApp. You also get a web dashboard to view your full history and progress charts.' }
           ]
@@ -1122,14 +1122,14 @@ const dictionary: Record<Language, Translations> = {
     },
     faqPage: {
       title: 'Centro de Ayuda',
-      subtitle: 'Encuentra respuestas a tus dudas sobre FoodSnap.ai',
+      subtitle: 'Encuentra respuestas a tus dudas sobre FoodSnap',
       searchPlaceholder: 'Busca tu duda (ej: cancelar, whatsapp...)',
       backHome: 'Volver al Inicio',
       categories: {
         general: {
           title: 'General',
           items: [
-            { q: '¿Qué es FoodSnap.ai?', a: 'FoodSnap.ai es un servicio de nutrición inteligente que usa inteligencia artificial para analizar fotos de tus comidas, calcular calorías/macros y dar feedback en tiempo real vía WhatsApp.' },
+            { q: '¿Qué es FoodSnap?', a: 'FoodSnap es un servicio de nutrición inteligente que usa inteligencia artificial para analizar fotos de tus comidas, calcular calorías/macros y dar feedback en tiempo real vía WhatsApp.' },
             { q: '¿Cómo funciona el análisis?', a: 'Solo envía una foto de tu plato a nuestro número de WhatsApp. Nuestra IA identifica los alimentos, estima porciones y devuelve un informe nutricional completo en segundos.' },
             { q: '¿Necesito una app?', a: 'No. Todo funciona dentro de WhatsApp. También tienes acceso a un panel web para ver tu historial completo y gráficos de evolución.' }
           ]

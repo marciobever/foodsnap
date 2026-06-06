@@ -82,7 +82,7 @@ const Header: React.FC<HeaderProps> = ({ onRegister, onLogin, onOpenTools, onNav
           </div>
           <div className="flex flex-col justify-center h-full">
             <span className="text-2xl font-bold tracking-tight text-gray-900 leading-none group-hover:text-brand-900 transition-colors flex items-baseline gap-0.5">
-              FoodSnap<span className="text-brand-600 text-xl">.ai</span>
+              FoodSnap
             </span>
             <span className="text-xs font-medium tracking-wide text-gray-500 mt-0.5 group-hover:text-brand-600/80 transition-colors">
               {t.header.slogan}

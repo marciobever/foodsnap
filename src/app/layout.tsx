@@ -21,8 +21,8 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 
 
 export const metadata: Metadata = {
-  title: 'FoodSnap.ai - Nutricionista de Bolso com Inteligência Artificial',
-  description: 'Transforme sua dieta com o FoodSnap.ai. Fotografe seu prato e receba análise nutricional completa via WhatsApp em segundos.',
+  title: 'FoodSnap - Nutricionista de Bolso com Inteligência Artificial',
+  description: 'Transforme sua dieta com o FoodSnap. Fotografe seu prato e receba análise nutricional completa via WhatsApp em segundos.',
   keywords: ['nutrição ia', 'contador de calorias foto', 'dieta whatsapp', 'nutricionista artificial', 'emagrecimento ia', 'food tracker', 'macro calculator'],
   authors: [{ name: 'FoodSnap AI' }],
   robots: 'index, follow',

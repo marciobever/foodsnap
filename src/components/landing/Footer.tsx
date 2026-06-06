@@ -57,7 +57,7 @@ const Footer: React.FC<FooterProps> = ({ onRegister, onNavigate }) => {
                 <Scan size={20} className="text-brand-500" strokeWidth={1.5} />
                 <Zap size={10} className="absolute text-yellow-500 fill-yellow-500" />
               </div>
-              <span className="text-xl font-bold tracking-tight text-white">FoodSnap.ai</span>
+              <span className="text-xl font-bold tracking-tight text-white">FoodSnap</span>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed">
               {t.footer.desc}
@@ -116,7 +116,7 @@ const Footer: React.FC<FooterProps> = ({ onRegister, onNavigate }) => {
         </div>
 
         <div className="border-t border-gray-900 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-600">
-          <p>&copy; {new Date().getFullYear()} FoodSnap.ai. {t.footer.rights}</p>
+          <p>&copy; {new Date().getFullYear()} FoodSnap. {t.footer.rights}</p>
           <div className="flex gap-6">
             <span className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-green-500"></div> Sistema Operacional</span>
           </div>

@@ -422,11 +422,13 @@ Regras IMPORTANTES:
       let imagePath: string | null = null;
       try {
           const ext = mimeType.includes("png") ? "png" : "jpg";
-          imagePath = `${profile.id}/coach_${Date.now()}.${ext}`;
-          await supabase.storage.from("coach-uploads").upload(imagePath, Buffer.from(imgBuffer), {
+          const candidatePath = `${profile.id}/coach_${Date.now()}.${ext}`;
+          const { error: uploadError } = await supabase.storage.from("coach-uploads").upload(candidatePath, Buffer.from(imgBuffer), {
               contentType: mimeType,
               upsert: true
           });
+          if (uploadError) throw uploadError;
+          imagePath = candidatePath;
       } catch (uploadErr) {
           console.error("Erro ao salvar foto da avaliação:", uploadErr);
           imagePath = null;

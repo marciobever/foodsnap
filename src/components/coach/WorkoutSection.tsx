@@ -14,7 +14,7 @@ const WorkoutSection: React.FC<WorkoutSectionProps> = ({ workout }) => {
         <div className="space-y-8">
             {/* Workout Header */}
             <div className="flex flex-col md:flex-row gap-6 mb-8">
-                <div className="flex-1 bg-white p-8 rounded-[2rem] border border-gray-100 shadow-sm flex items-center justify-between">
+                <div className="flex-1 bg-white p-8 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
                     <div>
                         <h3 className="text-gray-500 font-bold uppercase text-xs tracking-wider mb-2">Estrutura de Treino</h3>
                         <p className="text-4xl font-black text-gray-900">{workout?.split}</p>
@@ -27,7 +27,7 @@ const WorkoutSection: React.FC<WorkoutSectionProps> = ({ workout }) => {
 
                 {/* Injury Adaptations Accordion - Only show if data exists */}
                 {workout?.injury_adaptations && (
-                    <div className="flex-1 bg-red-50 p-6 rounded-[2rem] border border-red-100 cursor-pointer hover:bg-red-100/80 transition-colors" onClick={() => setOpenInjury(!openInjury)}>
+                    <div className="flex-1 bg-red-50 p-6 rounded-xl border border-red-100 cursor-pointer hover:bg-red-100/80 transition-colors" onClick={() => setOpenInjury(!openInjury)}>
                         <div className="flex justify-between items-center mb-2">
                             <h4 className="font-bold text-red-900 flex items-center gap-2">
                                 <Activity size={20} /> Adaptações para Dores?
@@ -64,7 +64,7 @@ const WorkoutSection: React.FC<WorkoutSectionProps> = ({ workout }) => {
             {/* Routine Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {workout?.routine?.map((day: any, i: number) => (
-                    <div key={i} className="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all group break-inside-avoid">
+                    <div key={i} className="bg-white rounded-xl p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all group break-inside-avoid">
                         <div className="flex justify-between items-start mb-6">
                             <div>
                                 <span className="inline-block px-3 py-1 bg-gray-100 text-gray-600 rounded-lg text-xs font-bold uppercase tracking-wider mb-2">

@@ -23,7 +23,7 @@ export const Tab = ({ active, onClick, icon, label }: any) => (
 );
 
 export const Card = ({ title, icon, children, className = "" }: any) => (
-    <div className={`bg-white p-6 md:p-8 rounded-[2.5rem] border border-gray-100 shadow-sm h-full ${className}`}>
+    <div className={`bg-white p-6 rounded-xl border border-gray-100 shadow-sm h-full ${className}`}>
         <div className="flex items-center gap-3 mb-6">
             <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center">
                 {icon}
@@ -54,7 +54,7 @@ export const MacroCard = ({ label, value, color }: any) => {
     };
 
     return (
-        <div className={`p-6 rounded-3xl border ${colors[color]} flex flex-col items-center justify-center text-center shadow-sm`}>
+        <div className={`p-6 rounded-xl border ${colors[color]} flex flex-col items-center justify-center text-center shadow-sm`}>
             <span className="text-xs font-bold uppercase opacity-60 mb-1">{label}</span>
             <span className="text-3xl font-black">{value}</span>
         </div>

@@ -153,10 +153,9 @@ const CoachResult: React.FC<CoachResultProps> = ({ data, onReset }) => {
 
   return (
     <div className="max-w-5xl mx-auto animate-in fade-in slide-in-from-bottom-8 duration-700 pb-12">
-      {/* Premium Header */}
-      <div className="bg-white rounded-[2rem] p-6 md:p-8 mb-8 shadow-xl relative overflow-hidden text-gray-900 border border-gray-100">
-        <div className="absolute top-0 right-0 w-96 h-96 bg-brand-50 rounded-full blur-[100px] opacity-60 -translate-y-1/2 translate-x-1/3"></div>
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-50 rounded-full blur-[80px] opacity-60 translate-y-1/3 -translate-x-1/3"></div>
+      {/* Header */}
+      <div className="bg-white rounded-xl p-6 mb-8 shadow-sm relative overflow-hidden text-gray-900 border border-gray-100">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-brand-50 rounded-full blur-[40px] -translate-y-1/2 translate-x-1/2"></div>
 
         <div className="relative z-10 flex flex-col md:flex-row justify-between items-start gap-6">
           <div>
@@ -167,14 +166,11 @@ const CoachResult: React.FC<CoachResultProps> = ({ data, onReset }) => {
               <span className="text-gray-400 text-xs font-mono">{new Date().toLocaleDateString()}</span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3 leading-tight">
-              Seu Blueprint <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-emerald-600">
-                De Transformação
-              </span>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 tracking-tight mb-3 leading-tight">
+              Seu Plano Personalizado
             </h1>
 
-            <p className="text-gray-500 text-base max-w-xl italic font-light border-l-2 border-brand-200 pl-4">
+            <p className="text-gray-500 text-sm max-w-xl italic border-l-2 border-brand-200 pl-4">
               "{motivation_quote || 'Disciplina é a ponte entre metas e conquistas.'}"
             </p>
           </div>

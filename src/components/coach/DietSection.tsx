@@ -14,7 +14,7 @@ const DietSection: React.FC<DietSectionProps> = ({ diet }) => {
                 <MacroCard label="Proteína" value={`${diet?.macros?.protein_g} g`} color="brand" />
                 <MacroCard label="Carboidratos" value={`${diet?.macros?.carbs_g} g`} color="blue" />
                 <MacroCard label="Gorduras" value={`${diet?.macros?.fats_g} g`} color="yellow" />
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
+                <div className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex flex-col items-center justify-center relative overflow-hidden">
                     <div className="absolute inset-0 bg-blue-500/5 z-0"></div>
                     <Droplets className="text-blue-500 mb-2 relative z-10" />
                     <span className="text-2xl font-black text-blue-900 relative z-10">{diet?.hydration_liters}L</span>
@@ -28,7 +28,7 @@ const DietSection: React.FC<DietSectionProps> = ({ diet }) => {
                     <h3 className="text-2xl font-bold text-gray-900">Plano Alimentar</h3>
                     <div className="space-y-4">
                         {diet?.meal_plan_example?.map((meal: any, i: number) => (
-                            <div key={i} className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group break-inside-avoid">
+                            <div key={i} className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group break-inside-avoid">
                                 <div className="flex items-center gap-4 mb-4">
                                     <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center font-bold text-gray-500 group-hover:bg-brand-100 group-hover:text-brand-600 transition-colors flex-shrink-0">
                                         {i + 1}
@@ -85,7 +85,7 @@ const DietSection: React.FC<DietSectionProps> = ({ diet }) => {
                 {/* Supplements */}
                 <div className="space-y-6">
                     <h3 className="text-2xl font-bold text-gray-900">Suplementação</h3>
-                    <div className="bg-gray-900 text-white p-6 rounded-3xl shadow-xl relative overflow-hidden break-inside-avoid">
+                    <div className="bg-gray-900 text-white p-6 rounded-xl shadow-xl relative overflow-hidden break-inside-avoid">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-brand-500 rounded-full blur-[60px] opacity-20"></div>
                         <div className="relative z-10 space-y-6">
                             {diet?.supplements?.map((sup: any, i: number) => {

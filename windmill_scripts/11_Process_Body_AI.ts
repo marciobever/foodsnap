@@ -4,6 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 
 /**
  * Windmill Script 11: Process Body AI (Dieta e Treino) with OpenAI
+ *
+ * Salva a foto enviada no bucket coach-uploads e compara o físico atual
+ * com a avaliação anterior do usuário (evolution_notes).
  */
 
 function buildCoachPdfHtml(plan: any): string {
@@ -237,6 +240,28 @@ export async function main(
       return { success: false, reason: "coach_daily_limit" };
   }
 
+  // 3.2 Buscar avaliação anterior para comparação de evolução
+  const { data: previousAssessment } = await supabase
+      .from("coach_assessments")
+      .select("created_at, ai_structured")
+      .eq("user_id", profile.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+  let lastEvaluationText = "";
+  const prevAnalysis = previousAssessment?.ai_structured?.analysis;
+  if (prevAnalysis) {
+      const prevDate = new Date(previousAssessment.created_at).toLocaleDateString("pt-BR");
+      lastEvaluationText = `Avaliação Anterior (${prevDate}): `;
+      if (prevAnalysis.body_fat_percentage) lastEvaluationText += `Percentual de Gordura Estimado: ${prevAnalysis.body_fat_percentage}%. `;
+      if (prevAnalysis.somatotype) lastEvaluationText += `Biótipo: ${prevAnalysis.somatotype}. `;
+      if (prevAnalysis.muscle_mass_level) lastEvaluationText += `Massa Muscular: ${prevAnalysis.muscle_mass_level}. `;
+      if (prevAnalysis.strengths?.length) lastEvaluationText += `Pontos Fortes: ${prevAnalysis.strengths.join(", ")}. `;
+      if (prevAnalysis.weaknesses?.length) lastEvaluationText += `Pontos Fracos: ${prevAnalysis.weaknesses.join(", ")}. `;
+      lastEvaluationText += `\nCompare o físico atual com esse histórico e preencha "evolution_notes" com as mudanças reais notadas (gordura, massa muscular, postura).`;
+  }
+
   // 4. Analisar com OpenAI
   const promptSystem = `Você é o "Titan Coach", um treinador olímpico de elite e nutricionista esportivo PhD.
 Sua missão é analisar a foto do físico de um usuário e criar um **Protocolo de Transformação** completo, rico e detalhado.
@@ -253,7 +278,7 @@ Formato de Resposta (Siga estritamente esta estrutura):
     "somatotype": "Ectomorfo" | "Mesomorfo" | "Endomorfo",
     "muscle_mass_level": "Baixo" | "Médio" | "Alto",
     "posture_analysis": "Análise detalhada da postura estruturada em tópicos (usando hifens '-'), apontando desvios específicos (ex: ombros projetados, leve cifose) de forma legível e sem parágrafos densos.",
-    "evolution_notes": "Análise técnica do físico com dicas práticas de evolução estruturadas em tópicos (usando hifens '-').",
+    "evolution_notes": "Se uma 'Avaliação Anterior' for fornecida no contexto, compare o físico atual com ela e descreva as mudanças reais notadas (gordura, massa muscular, postura) de forma técnica e motivacional, estruturada em tópicos (usando hifens '-'). Se NÃO houver avaliação anterior, dê dicas práticas de como acompanhar a evolução até a próxima avaliação, estruturadas em tópicos (usando hifens '-').",
     "strengths": ["Ombros largos", "Cintura fina"],
     "weaknesses": ["Panturrilhas pouco desenvolvidas"]
   },
@@ -325,10 +350,23 @@ Regras IMPORTANTES:
 3. O campo "substitution_suggestion" deve dar uma alternativa clara de troca de alimentos.
 4. Forneça um treino completo estruturado para os dias da semana em "routine".
 5. Nos suplementos, especifique COMO tomar e PORQUE.
-6. Se a imagem não for um corpo analisável, retorne "valid_body": false.`;
+6. Se a imagem não for um corpo analisável, retorne "valid_body": false.
+7. Se a mensagem do usuário incluir uma "Avaliação Anterior", USE esses dados para preencher "evolution_notes" com uma comparação real de progresso (não invente dados que não foram fornecidos).`;
 
   try {
       const openaiUrl = "https://api.openai.com/v1/chat/completions";
+
+      const userContent: any[] = [];
+      if (lastEvaluationText) {
+          userContent.push({ type: "text", text: lastEvaluationText });
+      }
+      userContent.push({
+          type: "image_url",
+          image_url: {
+              url: `data:${mimeType};base64,${base64Img}`,
+              detail: "high"
+          }
+      });
 
       const aiResponse = await fetch(openaiUrl, {
           method: "POST",
@@ -345,15 +383,7 @@ Regras IMPORTANTES:
                   },
                   {
                       role: "user",
-                      content: [
-                          {
-                              type: "image_url",
-                              image_url: {
-                                  url: `data:${mimeType};base64,${base64Img}`,
-                                  detail: "high"
-                              }
-                          }
-                      ]
+                      content: userContent
                   }
               ],
               response_format: { type: "json_object" },
@@ -388,6 +418,20 @@ Regras IMPORTANTES:
           return { success: false, reason: "invalid_body" };
       }
 
+      // 4.1 Salvar a foto no bucket coach-uploads (timeline de evolução)
+      let imagePath: string | null = null;
+      try {
+          const ext = mimeType.includes("png") ? "png" : "jpg";
+          imagePath = `${profile.id}/coach_${Date.now()}.${ext}`;
+          await supabase.storage.from("coach-uploads").upload(imagePath, Buffer.from(imgBuffer), {
+              contentType: mimeType,
+              upsert: true
+          });
+      } catch (uploadErr) {
+          console.error("Erro ao salvar foto da avaliação:", uploadErr);
+          imagePath = null;
+      }
+
       // 5. Salvar no Supabase
       const { data: dbInsert } = await supabase
           .from("coach_assessments")
@@ -401,7 +445,8 @@ Regras IMPORTANTES:
               workout_plan: typeof aiData.workout === 'string' ? aiData.workout : JSON.stringify(aiData.workout),
               diet_plan: typeof aiData.diet === 'string' ? aiData.diet : JSON.stringify(aiData.diet),
               ai_raw_response: responseText,
-              ai_structured: aiData
+              ai_structured: aiData,
+              image_url: imagePath
           })
           .select("id")
           .single();
@@ -449,7 +494,11 @@ Regras IMPORTANTES:
           .eq("phone_number", sender_number);
 
       // 7. Enviar o resultado pro WhatsApp
-      const successText = `✅ *Sua Avaliação Física está pronta!*\n\n🧬 *Biótipo:* ${aiData.analysis?.somatotype || ""}\n⚖️ *Gordura Estimada:* ~${aiData.analysis?.body_fat_percentage || ""}%\n💪 *Massa Muscular:* ${aiData.analysis?.muscle_mass_level || ""}\n\n🎯 *Foco:* ${aiData.workout?.focus || ""}\n\nSeu plano completo de Dieta e Treino já está disponível no painel. Você pode acessar e baixar o PDF por lá!\n👉 https://foodsnap.com.br`;
+      let successText = `✅ *Sua Avaliação Física está pronta!*\n\n🧬 *Biótipo:* ${aiData.analysis?.somatotype || ""}\n⚖️ *Gordura Estimada:* ~${aiData.analysis?.body_fat_percentage || ""}%\n💪 *Massa Muscular:* ${aiData.analysis?.muscle_mass_level || ""}\n\n🎯 *Foco:* ${aiData.workout?.focus || ""}`;
+      if (aiData.analysis?.evolution_notes) {
+          successText += `\n\n📈 *EVOLUÇÃO*\n${aiData.analysis.evolution_notes}`;
+      }
+      successText += `\n\nSeu plano completo de Dieta e Treino já está disponível no painel. Você pode acessar e baixar o PDF por lá!\n👉 https://foodsnap.com.br`;
 
       await fetch(`${GRAPH_API}/${META_PHONE_ID}/messages`, {
           method: "POST",

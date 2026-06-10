@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
-import { Sparkles, Zap, Plus, Activity, ShieldAlert } from 'lucide-react';
+import { Sparkles, Zap, Activity, ShieldAlert, TrendingUp, ListChecks } from 'lucide-react';
 import CoachResult from '@/components/coach/CoachResult';
+import CoachEvolution from '@/components/coach/CoachEvolution';
+import { Tab } from '@/components/coach/Shared';
 
 interface DashboardCoachProps {
     coachPlan: any;
@@ -13,6 +15,7 @@ interface DashboardCoachProps {
 
 const DashboardCoach: React.FC<DashboardCoachProps> = ({ coachPlan, setCoachPlan, coachHistory = [], setIsCoachWizardOpen, userPlan, user }) => {
     const isPaid = userPlan === 'pro' || userPlan === 'trial';
+    const [view, setView] = useState<'history' | 'evolution'>('history');
 
     // ─────────────────────────────────────────────────────────────────────────────
     // STATE 1: NO HISTORY (HERO / ONBOARDING)
@@ -122,37 +125,58 @@ const DashboardCoach: React.FC<DashboardCoachProps> = ({ coachPlan, setCoachPlan
                 };
 
                 return (
-                    <CoachResult 
-                        data={displayData} 
-                        onReset={() => setCoachPlan(null)} 
+                    <CoachResult
+                        data={displayData}
+                        onReset={() => setCoachPlan(null)}
                     />
                 );
             })() : (
                 <div className="space-y-6">
-                    <h3 className="text-2xl font-bold text-gray-900">Suas Avaliações e Planos</h3>
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {coachHistory.map((item: any) => (
-                            <div 
-                                key={item.id} 
-                                onClick={() => setCoachPlan(item)}
-                                className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-300 transition-all cursor-pointer group"
-                            >
-                                <div className="flex justify-between items-start mb-4">
-                                    <div className="bg-brand-50 p-3 rounded-lg text-brand-600 group-hover:bg-brand-500 group-hover:text-white transition-colors">
-                                        <Activity size={24} />
-                                    </div>
-                                    <span className="text-xs text-gray-400 font-medium">
-                                        {new Date(item.created_at).toLocaleDateString()}
-                                    </span>
-                                </div>
-                                <h4 className="font-bold text-lg text-gray-900 mb-1">Avaliação Física</h4>
-                                <p className="text-sm text-gray-500 mb-4">{item.biotype} • Foco: {item.goal_suggestion}</p>
-                                <div className="flex items-center text-brand-600 text-sm font-bold">
-                                    Ver Detalhes <Zap size={14} className="ml-1" />
-                                </div>
-                            </div>
-                        ))}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <h3 className="text-2xl font-bold text-gray-900">Seu Coach</h3>
+                        <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-gray-100 flex gap-1 w-fit">
+                            <Tab
+                                active={view === 'history'}
+                                onClick={() => setView('history')}
+                                icon={<ListChecks size={18} />}
+                                label="Avaliações"
+                            />
+                            <Tab
+                                active={view === 'evolution'}
+                                onClick={() => setView('evolution')}
+                                icon={<TrendingUp size={18} />}
+                                label="Evolução"
+                            />
+                        </div>
                     </div>
+
+                    {view === 'history' ? (
+                        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {coachHistory.map((item: any) => (
+                                <div
+                                    key={item.id}
+                                    onClick={() => setCoachPlan(item)}
+                                    className="bg-white p-6 rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-brand-300 transition-all cursor-pointer group"
+                                >
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="bg-brand-50 p-3 rounded-lg text-brand-600 group-hover:bg-brand-500 group-hover:text-white transition-colors">
+                                            <Activity size={24} />
+                                        </div>
+                                        <span className="text-xs text-gray-400 font-medium">
+                                            {new Date(item.created_at).toLocaleDateString()}
+                                        </span>
+                                    </div>
+                                    <h4 className="font-bold text-lg text-gray-900 mb-1">Avaliação Física</h4>
+                                    <p className="text-sm text-gray-500 mb-4">{item.biotype} • Foco: {item.goal_suggestion}</p>
+                                    <div className="flex items-center text-brand-600 text-sm font-bold">
+                                        Ver Detalhes <Zap size={14} className="ml-1" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <CoachEvolution coachHistory={coachHistory} />
+                    )}
                 </div>
             )}
         </div>

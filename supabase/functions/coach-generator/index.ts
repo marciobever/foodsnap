@@ -71,7 +71,9 @@ serve(async (req) => {
                     contents: [{ parts: parts }],
                     generationConfig: {
                         temperature: 0.2,
-                        response_mime_type: "application/json"
+                        response_mime_type: "application/json",
+                        maxOutputTokens: 32768,
+                        thinkingConfig: { thinkingBudget: 0 }
                     }
                 })
             }
@@ -85,9 +87,13 @@ serve(async (req) => {
 
         const data = await response.json();
         const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const finishReason = data.candidates?.[0]?.finishReason;
 
         if (!generatedText) {
             console.error("Gemini Empty Response:", JSON.stringify(data));
+            if (finishReason === "MAX_TOKENS") {
+                throw new Error("A resposta da IA ficou muito grande e foi cortada. Tente novamente.");
+            }
             throw new Error("A IA não conseguiu analisar as imagens. Tente fotos com melhor iluminação.");
         }
 

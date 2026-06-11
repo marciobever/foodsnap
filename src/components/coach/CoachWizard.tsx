@@ -168,12 +168,19 @@ const CoachWizard: React.FC<CoachWizardProps> = ({ isOpen, onClose, onComplete, 
 
             if (error) {
                 console.error("Supabase Invoke Error:", error);
-                // Tenta extrair a mensagem de erro real do backend se existir
+                // A mensagem padrão do supabase-js ("Edge Function returned a non-2xx
+                // status code") não diz o motivo real. O corpo da resposta (em
+                // error.context, um Response) traz { error: "motivo real" }.
                 let errorMsg = "Falha na comunicação com a IA.";
-                if (error && typeof error === 'object') {
-                    // Supabase functions usually return { context: ..., error: { message: "..." } } or just error
-                    if ('message' in error) errorMsg = (error as any).message;
-                    else errorMsg = JSON.stringify(error);
+                if (error?.context && typeof error.context.json === 'function') {
+                    try {
+                        const body = await error.context.json();
+                        if (body?.error) errorMsg = body.error;
+                    } catch (parseErr) {
+                        console.error("Erro ao ler corpo do erro:", parseErr);
+                    }
+                } else if (error && typeof error === 'object' && 'message' in error) {
+                    errorMsg = (error as any).message;
                 }
                 throw new Error(errorMsg);
             }

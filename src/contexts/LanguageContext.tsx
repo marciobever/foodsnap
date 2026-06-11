@@ -611,8 +611,8 @@ const dictionary: Record<Language, Translations> = {
       title: 'Personal Trainer IA',
       subtitle: 'Gere seu protocolo ideal baseado no seu biotipo.',
       photosStep: {
-        alert: 'Fotos de Avaliação: Use roupas leves. Posicione a câmera na altura do peito, corpo relaxado.',
-        front: 'Frente',
+        alert: 'Foto de Avaliação: Use roupas leves. Tire uma foto de corpo inteiro, de frente, com a câmera na altura do peito.',
+        front: 'Corpo Inteiro (Frente)',
         side: 'Perfil',
         back: 'Costas',
         camera: 'Câmera',
@@ -959,8 +959,8 @@ const dictionary: Record<Language, Translations> = {
       title: 'AI Personal Coach',
       subtitle: 'Generate your ideal protocol based on your biotype.',
       photosStep: {
-        alert: 'Assessment Photos: Wear light clothing. Position camera at chest height, relaxed body and straight spine.',
-        front: 'Front',
+        alert: 'Assessment Photo: Wear light clothing. Take a full-body front photo with the camera at chest height.',
+        front: 'Full Body (Front)',
         side: 'Side',
         back: 'Back',
         camera: 'Camera',
@@ -1307,8 +1307,8 @@ const dictionary: Record<Language, Translations> = {
       title: 'Entrenador Personal IA',
       subtitle: 'Genera tu protocolo ideal basado en tu biotipo.',
       photosStep: {
-        alert: 'Fotos de Evaluación: Usa ropa ligera. Posiciona la cámara a la altura del pecho, cuerpo relajado.',
-        front: 'Frente',
+        alert: 'Foto de Evaluación: Usa ropa ligera. Toma una foto de cuerpo entero, de frente, con la cámara a la altura del pecho.',
+        front: 'Cuerpo Entero (Frente)',
         side: 'Perfil',
         back: 'Espalda',
         camera: 'Cámara',

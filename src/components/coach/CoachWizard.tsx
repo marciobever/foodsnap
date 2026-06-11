@@ -18,7 +18,7 @@ type Step = 'photos' | 'goal' | 'processing';
 const CoachWizard: React.FC<CoachWizardProps> = ({ isOpen, onClose, onComplete, coachHistory = [] }) => {
     const { t } = useLanguage();
     const [step, setStep] = useState<Step>('photos');
-    const [photos, setPhotos] = useState<{ front?: string, side?: string, back?: string }>({});
+    const [photos, setPhotos] = useState<{ front?: string }>({});
     const [goal, setGoal] = useState<string>('');
     const [loading, setLoading] = useState(false);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -39,7 +39,7 @@ const CoachWizard: React.FC<CoachWizardProps> = ({ isOpen, onClose, onComplete, 
     // Refs for different input types
     const fileInputRef = useRef<HTMLInputElement>(null);
     const cameraInputRef = useRef<HTMLInputElement>(null);
-    const [activePhotoField, setActivePhotoField] = useState<'front' | 'side' | 'back' | null>(null);
+    const [activePhotoField, setActivePhotoField] = useState<'front' | null>(null);
 
     if (!isOpen) return null;
 
@@ -93,7 +93,7 @@ const CoachWizard: React.FC<CoachWizardProps> = ({ isOpen, onClose, onComplete, 
         }
     };
 
-    const triggerUpload = (field: 'front' | 'side' | 'back', source: 'gallery' | 'camera') => {
+    const triggerUpload = (field: 'front', source: 'gallery' | 'camera') => {
         setActivePhotoField(field);
         if (source === 'gallery') {
             setTimeout(() => fileInputRef.current?.click(), 0);
@@ -104,8 +104,8 @@ const CoachWizard: React.FC<CoachWizardProps> = ({ isOpen, onClose, onComplete, 
 
     const handleNext = () => {
         if (step === 'photos') {
-            if (photos.front && photos.side && photos.back) setStep('goal');
-            else alert("Por favor, adicione as 3 fotos (Frente, Perfil, Costas) para garantir a precisão da análise.");
+            if (photos.front) setStep('goal');
+            else alert("Por favor, adicione uma foto de corpo inteiro para garantir a precisão da análise.");
         } else if (step === 'goal') {
             if (goal) startProcessing();
         }
@@ -249,62 +249,59 @@ const CoachWizard: React.FC<CoachWizardProps> = ({ isOpen, onClose, onComplete, 
                                     </p>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {['front', 'side', 'back'].map((side) => (
-                                        <div key={side} className="flex flex-col gap-2">
-                                            <p className="font-bold text-gray-700 capitalize text-center text-sm tracking-wide">
-                                                {side === 'front' ? t.coach.photosStep.front : side === 'side' ? t.coach.photosStep.side : t.coach.photosStep.back}
-                                            </p>
-                                            <div className={`aspect-[3/4] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden group transition-all duration-300
-                                                ${photos[side as keyof typeof photos]
-                                                    ? 'border-brand-500 bg-gray-50'
-                                                    : 'border-gray-200 hover:border-brand-300 hover:bg-gray-50 hover:shadow-lg'
-                                                }
-                                            `}>
-                                                {photos[side as keyof typeof photos] ? (
-                                                    <>
-                                                        <img src={photos[side as keyof typeof photos]} className="absolute inset-0 w-full h-full object-cover" />
-                                                        <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-3 p-4">
-                                                            <button
-                                                                onClick={() => triggerUpload(side as any, 'camera')}
-                                                                className="bg-white text-gray-900 text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 w-full justify-center hover:bg-brand-50 transition-colors shadow-lg"
-                                                            >
-                                                                <Camera size={14} /> {t.coach.photosStep.camera}
-                                                            </button>
-                                                            <button
-                                                                onClick={() => triggerUpload(side as any, 'gallery')}
-                                                                className="bg-gray-900 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 w-full justify-center hover:bg-black transition-colors shadow-lg"
-                                                            >
-                                                                <ImageIcon size={14} /> {t.coach.photosStep.gallery}
-                                                            </button>
-                                                        </div>
-                                                        <div className="absolute top-2 right-2 bg-green-500 text-white p-1.5 rounded-full shadow-lg animate-in zoom-in">
-                                                            <Check size={12} strokeWidth={4} />
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="flex flex-col items-center gap-4 w-full px-4 text-center">
-                                                        <span className="text-gray-300 group-hover:text-brand-300 transition-colors"><Camera size={32} /></span>
-                                                        <div className="flex flex-col gap-2 w-full translate-y-0 transition-all duration-300">
-                                                            <button
-                                                                onClick={() => triggerUpload(side as any, 'camera')}
-                                                                className="bg-brand-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-brand-700 w-full shadow-sm"
-                                                            >
-                                                                {t.coach.photosStep.camera}
-                                                            </button>
-                                                            <button
-                                                                onClick={() => triggerUpload(side as any, 'gallery')}
-                                                                className="bg-white border border-gray-200 text-gray-700 text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 w-full"
-                                                            >
-                                                                {t.coach.photosStep.gallery}
-                                                            </button>
-                                                        </div>
-                                                        {/* Helper text removed as buttons are visible */}
+                                <div className="max-w-xs mx-auto">
+                                    <div className="flex flex-col gap-2">
+                                        <p className="font-bold text-gray-700 capitalize text-center text-sm tracking-wide">
+                                            {t.coach.photosStep.front}
+                                        </p>
+                                        <div className={`aspect-[3/4] rounded-2xl border-2 border-dashed flex flex-col items-center justify-center relative overflow-hidden group transition-all duration-300
+                                            ${photos.front
+                                                ? 'border-brand-500 bg-gray-50'
+                                                : 'border-gray-200 hover:border-brand-300 hover:bg-gray-50 hover:shadow-lg'
+                                            }
+                                        `}>
+                                            {photos.front ? (
+                                                <>
+                                                    <img src={photos.front} className="absolute inset-0 w-full h-full object-cover" />
+                                                    <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-all flex flex-col items-center justify-center gap-3 p-4">
+                                                        <button
+                                                            onClick={() => triggerUpload('front', 'camera')}
+                                                            className="bg-white text-gray-900 text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 w-full justify-center hover:bg-brand-50 transition-colors shadow-lg"
+                                                        >
+                                                            <Camera size={14} /> {t.coach.photosStep.camera}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => triggerUpload('front', 'gallery')}
+                                                            className="bg-gray-900 text-white text-xs font-bold py-2.5 px-4 rounded-xl flex items-center gap-2 w-full justify-center hover:bg-black transition-colors shadow-lg"
+                                                        >
+                                                            <ImageIcon size={14} /> {t.coach.photosStep.gallery}
+                                                        </button>
                                                     </div>
-                                                )}
-                                            </div>
+                                                    <div className="absolute top-2 right-2 bg-green-500 text-white p-1.5 rounded-full shadow-lg animate-in zoom-in">
+                                                        <Check size={12} strokeWidth={4} />
+                                                    </div>
+                                                </>
+                                            ) : (
+                                                <div className="flex flex-col items-center gap-4 w-full px-4 text-center">
+                                                    <span className="text-gray-300 group-hover:text-brand-300 transition-colors"><Camera size={32} /></span>
+                                                    <div className="flex flex-col gap-2 w-full translate-y-0 transition-all duration-300">
+                                                        <button
+                                                            onClick={() => triggerUpload('front', 'camera')}
+                                                            className="bg-brand-600 text-white text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-brand-700 w-full shadow-sm"
+                                                        >
+                                                            {t.coach.photosStep.camera}
+                                                        </button>
+                                                        <button
+                                                            onClick={() => triggerUpload('front', 'gallery')}
+                                                            className="bg-white border border-gray-200 text-gray-700 text-xs font-bold py-2 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50 w-full"
+                                                        >
+                                                            {t.coach.photosStep.gallery}
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
-                                    ))}
+                                    </div>
                                 </div>
                             </motion.div>
                         )}
@@ -398,12 +395,12 @@ const CoachWizard: React.FC<CoachWizardProps> = ({ isOpen, onClose, onComplete, 
                         <button
                             onClick={handleNext}
                             className={`px-8 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg shadow-brand-500/20
-                 ${(step === 'photos' && (!photos.front || !photos.side || !photos.back)) || (step === 'goal' && !goal)
+                 ${(step === 'photos' && !photos.front) || (step === 'goal' && !goal)
                                     ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                     : 'bg-brand-600 text-white hover:bg-brand-700 hover:-translate-y-0.5'
                                 }
                `}
-                            disabled={(step === 'photos' && (!photos.front || !photos.side || !photos.back)) || (step === 'goal' && !goal)}
+                            disabled={(step === 'photos' && !photos.front) || (step === 'goal' && !goal)}
                         >
                             {step === 'goal' ? t.coach.buttons.generate : t.coach.buttons.next}
                             {step !== 'goal' && <ChevronRight size={18} />}

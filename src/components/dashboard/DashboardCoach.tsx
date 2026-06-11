@@ -134,19 +134,28 @@ const DashboardCoach: React.FC<DashboardCoachProps> = ({ coachPlan, setCoachPlan
                 <div className="space-y-6">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <h3 className="text-2xl font-bold text-gray-900">Seu Coach</h3>
-                        <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-gray-100 flex gap-1 w-fit">
-                            <Tab
-                                active={view === 'history'}
-                                onClick={() => setView('history')}
-                                icon={<ListChecks size={18} />}
-                                label="Avaliações"
-                            />
-                            <Tab
-                                active={view === 'evolution'}
-                                onClick={() => setView('evolution')}
-                                icon={<TrendingUp size={18} />}
-                                label="Evolução"
-                            />
+                        <div className="flex flex-wrap items-center gap-3">
+                            <div className="bg-white/80 backdrop-blur-md p-1.5 rounded-2xl shadow-sm border border-gray-100 flex gap-1 w-fit">
+                                <Tab
+                                    active={view === 'history'}
+                                    onClick={() => setView('history')}
+                                    icon={<ListChecks size={18} />}
+                                    label="Avaliações"
+                                />
+                                <Tab
+                                    active={view === 'evolution'}
+                                    onClick={() => setView('evolution')}
+                                    icon={<TrendingUp size={18} />}
+                                    label="Evolução"
+                                />
+                            </div>
+                            <button
+                                onClick={() => setIsCoachWizardOpen(true)}
+                                className="px-5 py-2.5 bg-brand-500 hover:bg-brand-600 text-white rounded-xl font-bold flex items-center gap-2 transition-colors shadow-sm text-sm"
+                            >
+                                <Zap size={16} fill="currentColor" />
+                                Gerar Novo Protocolo
+                            </button>
                         </div>
                     </div>
 

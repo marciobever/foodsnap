@@ -16,6 +16,14 @@ const getStructured = (item: any) => {
     return typeof item.ai_structured === 'string' ? JSON.parse(item.ai_structured) : item.ai_structured;
 };
 
+const splitEvolutionNotes = (text: string): string[] => {
+    if (!text) return [];
+    return text
+        .split(/\n+|(?<=[.!?])\s+-\s+/)
+        .map((s) => s.replace(/^[-•]\s*/, '').trim())
+        .filter(Boolean);
+};
+
 const formatDate = (dateStr: string) =>
     new Date(dateStr).toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' });
 
@@ -205,7 +213,11 @@ const CoachEvolution: React.FC<CoachEvolutionProps> = ({ coachHistory }) => {
                         <Sparkles size={18} className="text-brand-600 shrink-0 mt-0.5" />
                         <div>
                             <p className="text-xs font-bold uppercase tracking-wide text-brand-700 mb-1">Parecer da IA</p>
-                            <p className="text-sm text-gray-700 leading-relaxed">{afterAnalysis.evolution_notes}</p>
+                            <ul className="text-sm text-gray-700 leading-relaxed space-y-1.5 list-disc list-outside pl-4">
+                                {splitEvolutionNotes(afterAnalysis.evolution_notes).map((line, idx) => (
+                                    <li key={idx}>{line}</li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                 )}

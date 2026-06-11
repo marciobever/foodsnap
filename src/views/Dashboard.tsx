@@ -10,6 +10,7 @@ import DashboardSubscription from '@/components/dashboard/DashboardSubscription'
 import DashboardCoach from '@/components/dashboard/DashboardCoach';
 import DashboardBilling from '@/components/dashboard/DashboardBilling';
 import DashboardProfile from '@/components/dashboard/DashboardProfile';
+import CoachWizard from '@/components/coach/CoachWizard';
 
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useDashboardHistory } from '@/hooks/useDashboardHistory';
@@ -37,7 +38,7 @@ export default function Dashboard({
   const [isCoachWizardOpen, setIsCoachWizardOpen] = useState(false);
   const { t } = useLanguage();
   const { history, loading: loadingHistory } = useDashboardHistory(user);
-  const { coachHistory, loadingCoach } = useCoachHistory(user);
+  const { coachHistory, loadingCoach, refetchCoachHistory } = useCoachHistory(user);
 
   const calculateStreaks = (hist: any[]) => {
     if (!hist || hist.length === 0) return { current: 0, longest: 0, chart: [] };
@@ -193,6 +194,21 @@ export default function Dashboard({
         t={t}
         logout={onLogout}
       />
+
+      <AnimatePresence>
+        {isCoachWizardOpen && (
+          <CoachWizard
+            isOpen={isCoachWizardOpen}
+            onClose={() => setIsCoachWizardOpen(false)}
+            onComplete={(data) => {
+              setCoachPlan({ ai_structured: data });
+              setActiveTab('coach');
+              refetchCoachHistory();
+            }}
+            coachHistory={coachHistory}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 }
